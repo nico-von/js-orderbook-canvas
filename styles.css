@@ -1,0 +1,21 @@
+canvas {
+    position: absolute;
+    border: 1px solid black;
+    background: transparent;
+}
+
+#canvasTabs {
+    z-index: 1;
+}
+
+#canvasLowerTabs {
+    z-index: 2;
+}
+
+#canvasData {
+    z-index: 3;
+}
+
+#canvasGrid {
+    z-index: 4;
+}
