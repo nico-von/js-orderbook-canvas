@@ -16,19 +16,17 @@ window.onload = function() {
             this.canvas.width = this.right;
             this.canvas.height = this.bottom;
             this.ctx.clearRect(0,0,this.right, this.bottom);
-            if (this.draw) {
-                this.draw();
+            if (this.drawGrid) {
+                this.drawGrid();
             }
         }
     }
     class CanvasContainer extends OrderFlowCanvas {
-        constructor( right, bottom, top, left, canvas, isScrollable, isDynamic, content){
-            super(right, bottom, top, left, canvas); 
-            this.isScrollable = isScrollable;
+        constructor( right, bottom, top, left, canvas, isDynamic, content){
+            super(right, bottom, top, left, canvas);
             this.isDynamic = isDynamic;
             this.content = content;
             this.init();    
-            this.addListeners();      
         }
         // for checking if mouse is above canvas
         // will only be checking Y
@@ -60,26 +58,13 @@ window.onload = function() {
             
         }
 
-        #handleScroll(e){
-            const posY = e.clientY; 
-            if (this.isOnCanvas(posY)){
-                e.preventDefault();
-                e.stopPropagation();
-                if (this.isDynamic){
-                    this.#updateDynamic(e.deltaY);
-                } else {
-                    this.#updateStatic(e.deltaY);
-                }
-                
-                drawOnContainer(this, this.content);
+        handleScroll(e){
+            if (this.isDynamic){
+                this.#updateDynamic(e.deltaY);
+            } else {
+                this.#updateStatic(e.deltaY);
             }
-        } 
-
-        addListeners() {
-            // add scrollable listener
-            if (this.isScrollable){
-                this.canvas.addEventListener('wheel', this.#handleScroll.bind(this));
-            }
+            drawOnContainer(this, this.content);
         }
 
     }
@@ -91,7 +76,7 @@ window.onload = function() {
         }
     }
     class CanvasGridContent extends OrderFlowCanvas {
-        constructor( right, bottom, top, left, startCell, maxCells, cellHeight, cellWidth, draw ){
+        constructor( right, bottom, top, left, startCell, maxCells, cellHeight, cellWidth, draw){
             super(right, bottom, top, left, document.createElement('canvas'));
             this.startCell = startCell; // starting cell index to rendering 
             this.maxCells = maxCells; // maximum cell index to render
@@ -101,14 +86,32 @@ window.onload = function() {
             this.currentY = this.top; // current Y location
             this.init();     
         }
-    }
 
+        drawGrid() {
+            const totalCells = this.maxCells - this.startCell;
+            // calculate for endCell
+            const endCell = this.startCell + totalCells;
+            // start loop
+            for (let i = this.startCell; i < endCell; i++) {
+                let nextY = Math.round(i) + (this.currentY/this.cellHeight);
+                
+                // optimization only
+                const realY = nextY  * this.cellHeight;
+                if ((realY) > this.bottom || (realY) < this.top){
+                    continue;
+                }
+
+                // ctx jobs
+                this.draw(i, nextY);
+            }        
+        } 
+    }
     // HELPER FUNCTIONS
 
     // draw on container
     function drawOnContainer(container, content){
         container.ctx.clearRect(0, 0, container.right, container.bottom);
-        container.ctx.drawImage(content.canvas, content.left, content.top);    
+        container.ctx.drawImage(content.canvas, container.left, container.top);    
     }
 
     // draw grid
@@ -122,76 +125,102 @@ window.onload = function() {
 
     // ACTUAL CODE
     
-    // data
-    // use d3 to make a quick linear scale that envelops the domain
-    // this shall hold the data for the buckets of price for the orderbook
-    const data = scaleLinear([0,1000],[0,1000]);
-    
-    // initialise global cellHeight and cellWidth
+    // initialise globals
     const cellHeight = 27; 
     const cellWidth = 100;
+    const mainCanvasRight = 500;
+    const mainCanvasBottom = 500;
+    const mainCanvasLeft = 0;
+    const mainCanvasTop = 0;
+    const gridStartCell = 0;
+    const gridMaxCell = (mainCanvasBottom / cellHeight) * 2; // maximumCell 
+                                                             // **Multiplied by 2 to fill 
+                                                             // the padding set on grid Content
     
+    const canvasGrid = document.getElementById('canvasGrid');
+    const canvasData = document.getElementById('canvasData');
 
-    // GRID
+    // 1. GRID
     // grid container (z-index should be bottom-most)
-    const gridContainer = new CanvasContainer(500, 500, 0, 0, document.getElementById('canvasGrid'), true, true, undefined);
+    const gridContainer = new CanvasContainer(mainCanvasRight, 
+        mainCanvasBottom, mainCanvasTop, mainCanvasLeft, canvasGrid, 
+        true, undefined);
     
     // grid content
     const gridContent = new CanvasGridContent(
-        gridContainer.right, // the right of gridContent(X2)
-        gridContainer.bottom * 2, // the bottom of gridContent(Y2) 
+        mainCanvasRight, // the right of gridContent(X2)
+        mainCanvasBottom * 2, // the bottom of gridContent(Y2) 
                                   // **Needs to have off-canvas padding to perform 
                                   // behind the scenes manipulation such as adding of 
                                   // grid cells for a beautiful scroll effect!
         - cellHeight, // the top or Y1 **Also needs padding for similar reasons
-        0, // the left or starting X1
-        0, // startingCell
-        (gridContainer.bottom / cellHeight) * 2, // maximumCell 
-                                                 // **Multiplied by 2 to fill 
-                                                 // the padding set above 
+        mainCanvasLeft, // the left or starting X1
+        gridStartCell, // startingCell
+        gridMaxCell,  // maxCell
         cellHeight, // cell height
         cellWidth, // cell width
-        function(){
-            // grid content draw
-
-            // background fill 
-            this.ctx.fillStyle = ("#ffffff");
-            this.ctx.fillRect(this.top, this.left, this.right, this.bottom);
-            
-            // Draw Calculation 
-            // (totalCells should remain consistent for performance purposes)
-            const totalCells = this.maxCells - this.startCell;
-            // calculate for endCell
-            const endCell = this.startCell + totalCells;
-
-            // start loop
-            for (let i = this.startCell; i < endCell; i++) {
-                
-                // canvas works positive down, negative up, hence index 
-                // appears to be reversed 
-                
-                this.ctx.fillStyle = ("#ff0000");
-                // Y will change according to cell index adjusted with deltaY
-                let nextY = Math.round(i) + (this.currentY/this.cellHeight);
-                
-                // optimization only
-                const realY = nextY  * this.cellHeight;
-                if ((realY) > this.bottom || (realY) < this.top){
-                    continue;
+        function(i, nextY){
+                //fill style
+                if (Math.round(i) % 2 == 0) {
+                    this.ctx.fillStyle = ("#4C4E52");
+                } else {
+                    this.ctx.fillStyle = ("#6F7378");
                 }
-
-                // ctx jobs
-                const rectangle = drawGridCell(this.cellHeight, this.cellWidth, 1, nextY)
-                const rectangle2 = drawGridCell(this.cellHeight, this.cellWidth, 2, nextY)
-                this.ctx.stroke(rectangle);
-                this.ctx.stroke(rectangle2);
-                this.ctx.fillText(Math.round(i), 75, (nextY * this.cellHeight) + 16);
-            }
+                const grids = [
+                    drawGridCell(this.cellHeight, this.cellWidth, 1, nextY),
+                    drawGridCell(this.cellHeight, this.cellWidth, 2, nextY),
+                    drawGridCell(this.cellHeight, this.cellWidth, 3, nextY),
+                ]
+                
+                this.ctx.lineWidth = 0.05;
+                for (let grid of grids){
+                    this.ctx.fill(grid);
+                    this.ctx.stroke(grid);
+                }
+                
+            
         })
-    // set grid Content
-    gridContainer.content = gridContent;
 
-    // first draw
-    drawOnContainer(gridContainer, gridContainer.content);
+    // 2. DATA
+    //
+    // use d3 to make a quick linear scale that envelops the domain
+    // this shall hold the data for the buckets of price for the orderbook
+    const data = scaleLinear([0,1000],[0,1000]);
+    const dataContainer = new CanvasContainer(mainCanvasRight, 
+        mainCanvasBottom, mainCanvasTop, mainCanvasLeft, canvasData, 
+        true, undefined);
     
+    const dataContent = new CanvasGridContent(mainCanvasRight,
+        mainCanvasBottom * 2, -cellHeight, mainCanvasLeft, 
+        gridStartCell, gridMaxCell, cellHeight, cellWidth, function(i, nextY){
+            if (Math.round(i) % 2 == 0) {
+                this.ctx.fillStyle = ("#6F7378");
+            } else {
+                this.ctx.fillStyle = ("#4C4E52");
+            }
+            this.ctx.fillText(Math.round(i), 10, (nextY * this.cellHeight) + 16);
+        })
+    
+    // 5. SET CONTENTS
+    gridContainer.content = gridContent;
+    dataContainer.content = dataContent;
+
+    // 6. DRAW
+    drawOnContainer(gridContainer, gridContainer.content);
+    drawOnContainer(dataContainer, dataContainer.content);
+        
+    // 7. EVENT LISTENERS
+    // this was originally a method in the container
+    // but decided to take it out for much easier readability 
+    gridContainer.canvas.addEventListener('wheel', updateAllContainers);
+    function updateAllContainers(e) {
+        const posY = e.clientY;
+            if (gridContainer.isOnCanvas(posY)){
+                e.preventDefault();
+                e.stopPropagation();
+                gridContainer.handleScroll(e);
+                dataContainer.handleScroll(e); 
+            }   
+    };
+
 }
