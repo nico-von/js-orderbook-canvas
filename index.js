@@ -50,18 +50,13 @@ window.onload = function() {
         // for dynamic scroll
         #updateDynamic(deltaY){
             // calculate next starting cell & max cell
-            const nextStartCell = this.content.startCell + (deltaY / this.content.cellHeight); 
-            const nextMaxCells = this.content.maxCells +  (deltaY / this.content.cellHeight);
-            const nextY = this.content.currentY - (deltaY);
+            this.content.startCell += (deltaY / this.content.cellHeight); 
+            this.content.maxCells +=  (deltaY / this.content.cellHeight);
+            this.content.currentY -= (deltaY);
 
-            // apply if startCell is not near END
-            if (nextStartCell >= 0) {
-                this.content.startCell = nextStartCell;
-                this.content.maxCells = nextMaxCells;
-                this.content.currentY = nextY;
-                // re-initialise
-                this.content.init();
-            }
+            // re-initialise
+            this.content.init();
+            
             
         }
 
@@ -171,8 +166,10 @@ window.onload = function() {
 
             // start loop
             for (let i = this.startCell; i < endCell; i++) {
-
-
+                
+                // canvas works positive down, negative up, hence index 
+                // appears to be reversed 
+                
                 this.ctx.fillStyle = ("#ff0000");
                 // Y will change according to cell index adjusted with deltaY
                 let nextY = Math.round(i) + (this.currentY/this.cellHeight);
