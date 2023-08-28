@@ -28,10 +28,11 @@ window.onload = function() {
             this.content = content;
             this.init();    
         }
-        // for checking if mouse is above canvas
-        // will only be checking Y
-        isOnCanvas(y) {
-            return (y >= this.top && y <= this.top + this.bottom);
+        isOnCanvas(x, y) {
+            return ((x >= this.left) && 
+                     (x <= this.left + this.right) && 
+                     (y >= this.top) && 
+                     (y <= this.top + this.bottom));
         }
         
         // for static scroll
@@ -51,7 +52,7 @@ window.onload = function() {
             this.content.startCell += (deltaY / this.content.cellHeight); 
             this.content.maxCells +=  (deltaY / this.content.cellHeight);
             this.content.currentY -= (deltaY);
-
+            this.content.deltaY = deltaY;
             // re-initialise
             this.content.init();
             
@@ -84,6 +85,7 @@ window.onload = function() {
             this.cellWidth = cellWidth; // cell Width
             this.draw = draw; // draw Function
             this.currentY = this.top; // current Y location
+            this.deltaY = 0;
             this.init();     
         }
 
@@ -106,6 +108,31 @@ window.onload = function() {
             }        
         } 
     }
+    // LISTENERS
+    function wheelHandlerAllContainers(e) {
+        const x = e.clientX;
+        const y = e.clientY;
+
+        if (dataContainer.isOnCanvas(x, y)){
+            e.preventDefault();
+            e.stopPropagation();
+            gridContainer.handleScroll(e);
+            dataContainer.handleScroll(e); 
+        }   
+    };
+
+    function mouseMoveHandler(e) {
+        const x = e.clientX;
+        const y = e.clientY;
+
+        if (gridContainer.isOnCanvas(x, y)){
+            gridContainer.content.x = x;
+            gridContainer.content.y = y;
+            // redraw
+            gridContainer.content.init();
+            drawOnContainer(gridContainer, gridContainer.content);
+        }
+    }
     // HELPER FUNCTIONS
 
     // draw on container
@@ -116,17 +143,18 @@ window.onload = function() {
 
     // draw grid
     function drawGridCell(height, width, xOffset, yOffset) {
+        // returns rectangle & xOffset
         const x = (xOffset * width);
         const y = (yOffset * height);
         const rectangle = new Path2D();
         rectangle.rect(x, y, width, height);
-        return rectangle;
+        return [rectangle, xOffset];
     }
 
     // ACTUAL CODE
     
     // initialise globals
-    const cellHeight = 27; 
+    const cellHeight = 20; 
     const cellWidth = 100;
     const mainCanvasRight = 500;
     const mainCanvasBottom = 500;
@@ -139,7 +167,14 @@ window.onload = function() {
     
     const canvasGrid = document.getElementById('canvasGrid');
     const canvasData = document.getElementById('canvasData');
-
+    // colours
+    const gridColourObject = {default: "#000000", a: "#4C4E52", b: "#6F7378"}
+    const highlightXColourObject = {1: "#ffbf00", 3: "#ff0000"}
+    const highlightYColourObject = "#d3d3d3";
+    
+    // lines
+    const highlightedGridStrokeWidth = 1;
+    const defaultGridStrokeWidth = 0.05;
     // 1. GRID
     // grid container (z-index should be bottom-most)
     const gridContainer = new CanvasContainer(mainCanvasRight, 
@@ -161,21 +196,50 @@ window.onload = function() {
         cellWidth, // cell width
         function(i, nextY){
                 //fill style
+                this.ctx.strokeStyle = gridColourObject.default;
                 if (Math.round(i) % 2 == 0) {
-                    this.ctx.fillStyle = ("#4C4E52");
+                    this.ctx.fillStyle = gridColourObject.a;
                 } else {
-                    this.ctx.fillStyle = ("#6F7378");
+                    this.ctx.fillStyle = gridColourObject.b;
                 }
                 const grids = [
                     drawGridCell(this.cellHeight, this.cellWidth, 1, nextY),
                     drawGridCell(this.cellHeight, this.cellWidth, 2, nextY),
                     drawGridCell(this.cellHeight, this.cellWidth, 3, nextY),
                 ]
+
+                let xPosition = 0;
+                let yPosition = 0;
+                if (this.x && this.y) {
+                    // get relative X and Y pos
+                    const relativeX = this.x / this.right;
+                    const relativeY = (this.y - this.currentY) / this.bottom;
+    
+                    // get x & y Position of selected cell 
+                    xPosition = Math.floor(relativeX * (this.right / this.cellWidth));
+                    yPosition = Math.floor(relativeY * (this.bottom/ this.cellHeight));
+                }
+                //render
                 
-                this.ctx.lineWidth = 0.05;
                 for (let grid of grids){
-                    this.ctx.fill(grid);
-                    this.ctx.stroke(grid);
+                    // > FILL
+                    this.ctx.lineWidth = defaultGridStrokeWidth;
+                    const withinY = yPosition == Math.round(i);
+                    const withinX = xPosition == grid[1];
+
+                    if ( withinY ){
+                        this.ctx.fillStyle = highlightYColourObject;
+                    }
+                    this.ctx.fill(grid[0]);
+
+                    // > STROKE
+                    // except price grid
+                    if (withinX && withinY && grid[1] != 2)
+                    {
+                        this.ctx.lineWidth = highlightedGridStrokeWidth;
+                        this.ctx.strokeStyle = highlightXColourObject[grid[1]];
+                    }
+                    this.ctx.stroke(grid[0]);
                 }
                 
             
@@ -193,12 +257,9 @@ window.onload = function() {
     const dataContent = new CanvasGridContent(mainCanvasRight,
         mainCanvasBottom * 2, -cellHeight, mainCanvasLeft, 
         gridStartCell, gridMaxCell, cellHeight, cellWidth, function(i, nextY){
-            if (Math.round(i) % 2 == 0) {
-                this.ctx.fillStyle = ("#6F7378");
-            } else {
-                this.ctx.fillStyle = ("#4C4E52");
-            }
-            this.ctx.fillText(Math.round(i), 10, (nextY * this.cellHeight) + 16);
+
+            this.ctx.fillStyle = ("#000000");
+            this.ctx.fillText(Math.round(i), 2 * this.cellWidth, (nextY * this.cellHeight) + 16);
         })
     
     // 5. SET CONTENTS
@@ -212,15 +273,7 @@ window.onload = function() {
     // 7. EVENT LISTENERS
     // this was originally a method in the container
     // but decided to take it out for much easier readability 
-    gridContainer.canvas.addEventListener('wheel', updateAllContainers);
-    function updateAllContainers(e) {
-        const posY = e.clientY;
-            if (gridContainer.isOnCanvas(posY)){
-                e.preventDefault();
-                e.stopPropagation();
-                gridContainer.handleScroll(e);
-                dataContainer.handleScroll(e); 
-            }   
-    };
+    dataContainer.canvas.addEventListener('wheel', wheelHandlerAllContainers);
+    dataContainer.canvas.addEventListener('mousemove', mouseMoveHandler);
 
 }
