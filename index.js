@@ -308,7 +308,6 @@ tabContent.gridColumnCount = gridColumns;
 
 // DRAW FUNCTIONS
 function gridDraw(i, nextY){
-    console.log("hello")
     //fill style
     if (Math.round(i) % 2 == 0) {
         this.ctx.fillStyle = gridColourObject.a;
