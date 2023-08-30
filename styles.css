@@ -6,10 +6,12 @@ canvas {
 
 #canvasTabs {
     z-index: 1;
+    background: #333;
 }
 
 #canvasLowerTabs {
     z-index: 2;
+    border: none; /* temporary */
 }
 
 #canvasData {
