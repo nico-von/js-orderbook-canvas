@@ -1,4 +1,5 @@
-# js-orderbook
+# js-orderbook-canvas
+This is a CS50 final project codebase.
 
 ## Vanilla HTML
 For CS50 final project purposes - primarily to maintain CS50's low-level spirit, this will be a vanilla html project. This is a little orderbook "template/widget" written with js and canvas. The orderbook is often used by traders for analysing orders and liquidity.
