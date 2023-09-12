@@ -1,5 +1,4 @@
-// import D3
-import { scaleLinear, max } from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
+import { ticker, depth, trades, svp } from "./data.js";
 
 // class and function declarations
 class OrderFlowCanvas {
@@ -355,23 +354,79 @@ function mouseClickHandler(e) {
   }
 }
 
+function mouseDblClickHandler(e) {
+  const container = this.getBoundingClientRect();
+  const x = e.clientX - container.left;
+  const y = e.clientY - container.top;
+
+  //clear trades
+  if (gridContainer.isOnCanvas(x, y)) {
+    Object.keys(trades).forEach((key) => delete trades[key]);
+  }
+}
 // GLOBALS
+// Function transform
+// const transformIndex = scaleLinear().domain([0, 1]).rangeRound([depth.topOfBook, depth.topOfBook + depth.step]);
+
 // Canvas Tab Settings
-const data = scaleLinear([0, 1000], [0, 1000]);
 const canvasTabTop = 0;
 let canvasTabBottom = 15;
 const canvasTabOffset = 3.5;
-const tabs = ["delta", "limit", "bid", "price", "ask", "limit", "delta"];
+const tabs = ["svp", "delta", "bid", "sell", "price", "buy", "ask", "delta"];
+const data = {
+  getPriceLevel: function (i) {
+    return ticker.transformIndex(Math.round(i));
+  },
+  svp: function(i) {
+    const priceLevel = svp[this.getPriceLevel(i)];
+    if (priceLevel) {
+      return priceLevel.quantity;
+    }
+    return "";
+  },
+  bid: function (i) {
+    const priceLevel = depth[this.getPriceLevel(i)];
+
+    if (priceLevel && priceLevel.bid) {
+      return priceLevel.bid;
+    }
+    return "";
+  },
+  buy: function (i) {
+    const priceLevel = trades[this.getPriceLevel(i)];
+    if (priceLevel && priceLevel.type == "buy") {
+      return priceLevel.quantity;
+    }
+    return "";
+  },
+  price: function (i) {
+    return this.getPriceLevel(i);
+  },
+  sell: function (i) {
+    const priceLevel = trades[this.getPriceLevel(i)];
+    if (priceLevel && priceLevel.type == "sell") {
+      return priceLevel.quantity;
+    }
+    return "";
+  },
+  ask: function (i) {
+    const priceLevel = depth[this.getPriceLevel(i)];
+    if (priceLevel && priceLevel.ask) {
+      return priceLevel.ask;
+    }
+    return "";
+  },
+};
 // Container Settings
 const mainCanvasRight = 700;
-const mainCanvasBottom = 200;
+const mainCanvasBottom = 500;
 const mainCanvasLeft = 0;
 const mainCanvasTop = 0;
 
 // Grid Settings
 
-const gridColumns = 7;
-const priceColumn = 3;
+const gridColumns = 8;
+const priceColumn = 4;
 const cellHeight = 20;
 
 const gridStartCell = 0;
@@ -386,7 +441,7 @@ const tabTextFont = "0.7rem 'Roboto-Mono', monospace";
 
 // colours
 const gridColourObject = { default: "#ffffff", a: "#4C4E52", b: "#6F7378" };
-const highlightXColourObject = { 2: "#00ff00", 4: "#ff0000" };
+const highlightXColourObject = { 2: "#00ff00", 6: "#ff0000" };
 const highlightYColourObject = "#d3d3d3";
 const dataTextColour = "#f0f0f0";
 const tabTextColour = "#ffffff";
@@ -527,11 +582,37 @@ function gridDraw(i, nextY) {
 function dataDraw(i, nextY) {
   // sample data rendering
   this.ctx.fillStyle = dataTextColour;
-  this.ctx.fillText(
-    Math.round(i),
-    this.xCoordinate[priceColumn],
-    nextY * this.cellHeight + 16
-  );
+  for (let j = 0; j < this.gridColumnCount; j++) {
+    let dataText = "";
+    switch (j) {
+      case 0:
+        dataText = data.svp(i);
+        break;
+      case 2:
+        dataText = data.bid(i);
+        break;
+      case 3:
+        dataText = data.sell(i);
+        break;
+      case 4:
+        dataText = data.price(i);
+        break;
+      case 5:
+        dataText = data.buy(i);
+        break;
+      case 6:
+        dataText = data.ask(i);
+        break;
+      default:
+        dataText = "";
+    }
+
+    this.ctx.fillText(
+      dataText,
+      this.xCoordinate[j],
+      nextY * this.cellHeight + 16
+    );
+  }
 }
 
 function tabDraw() {
@@ -587,11 +668,6 @@ window.onload = function () {
   dataContainer.initContent();
   tabContainer.initContent();
 
-  // initial draw
-  drawOnContainer(gridContainer, canvasTabBottom);
-  drawOnContainer(dataContainer, canvasTabBottom);
-  drawOnContainer(tabContainer, canvasTabBottom);
-
   // event listeners
   // this was originally a method in the container
   // but decided to take it out for much easier readability
@@ -601,5 +677,14 @@ window.onload = function () {
   dataContainer.canvas.addEventListener("mousemove", mouseMoveHandler);
   dataContainer.canvas.addEventListener("mousedown", mouseDownHandler);
   dataContainer.canvas.addEventListener("click", mouseClickHandler);
+  dataContainer.canvas.addEventListener("dblclick", mouseDblClickHandler);
   window.addEventListener("mouseup", mouseUpHandler);
+
+  // initial draw - only on first depth populate
+  window.addEventListener("draw", (e) => {
+    // initial draw
+    drawOnContainer(gridContainer, canvasTabBottom);
+    drawOnContainer(dataContainer, canvasTabBottom);
+    drawOnContainer(tabContainer, canvasTabBottom);
+  });
 };
