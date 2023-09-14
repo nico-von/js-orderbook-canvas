@@ -3,12 +3,11 @@ export const lastTrade = {};
 
 export async function manageMarketTrades(data) {
     const key = data.p;
-    const price = parseFloat(price);
+    const price = parseFloat(data.p);
     const type = data.m ? "sold" : "bought";
     const qty = parseFloat(data.q);
 
-    lastTrade[price] = {
-        key,
+    lastTrade[key] = {
         price,
         type,
         qty
