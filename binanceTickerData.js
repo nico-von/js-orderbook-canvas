@@ -1,8 +1,12 @@
 const exchangeInfoEndpoint = "https://fapi.binance.com/fapi/v1/exchangeInfo";
 
-export async function manageTicker(dataTicker) {
+async function getExchangeInfo(){
   const response = await fetch(exchangeInfoEndpoint);
-  const exchangeInfo = await response.json();
+  return await response.json();
+}
+
+export async function manageTicker(dataTicker) {
+  const exchangeInfo = await getExchangeInfo();
   const ticker = exchangeInfo.symbols.filter((d) => d.symbol == dataTicker)[0];
   const { tickSize } = ticker.filters.filter(
     (d) => d.filterType == "PRICE_FILTER"

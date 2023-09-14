@@ -13,6 +13,13 @@ let lastUpdateId = null;
 let firstEventProcessed = false;
 let lastUpdatedEvent = null;
 
+async function getSnapshot(ticker, limit){
+    const response = await fetch(
+        `https://fapi.binance.com/fapi/v1/depth?symbol=${ticker}&limit=${limit}`
+    )
+    return await response.json();
+}
+
 function commitToDepth(snapshot){
     // populate accordingly
     let bids = snapshot.e ? snapshot.b : snapshot.bids;
@@ -53,10 +60,7 @@ function commitToDepth(snapshot){
 
 async function applySnapshot() {
     console.log("STEP 3")
-    const response = await fetch(
-        `https://fapi.binance.com/fapi/v1/depth?symbol=${ticker}&limit=${limit}`
-    )
-    const snapshot = await response.json();
+    const snapshot = await getSnapshot();
     commitToDepth(snapshot);
     return snapshot.lastUpdateId;
 }
