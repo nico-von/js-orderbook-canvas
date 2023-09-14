@@ -122,14 +122,14 @@ async function processBuffer() {
     await processBuffer();
 }
 
-export async function manageOrderBook(data, dataTicker, restLimit){
+export async function manageOrderBook(data, dataTicker, restQtyLimit){
     buffer.push(data);
 
     if (buffer.length === 1) {
         if(!lastUpdateId) {
             console.log("initial call");
             ticker = dataTicker;
-            limit = restLimit;
+            limit = restQtyLimit;
             lastUpdateId = await applySnapshot();
             await processBuffer();
             return;

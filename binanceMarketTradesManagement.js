@@ -7,7 +7,7 @@ export async function manageMarketTrades(data) {
     const type = data.m ? "sold" : "bought";
     const qty = parseFloat(data.q);
 
-    lastTrade = {
+    lastTrade[price] = {
         key,
         price,
         type,
