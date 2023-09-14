@@ -1,4 +1,4 @@
-import { ticker, depth, trades, svp } from "./data.js";
+// import { ticker, depth, trades, svp } from "./data.js";
 
 // class and function declarations
 class OrderFlowCanvas {
