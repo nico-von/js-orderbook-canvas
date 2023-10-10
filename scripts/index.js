@@ -1,5 +1,4 @@
 // import { ticker, depth, trades, svp } from "./data.js";
-
 // class and function declarations
 class OrderFlowCanvas {
   constructor(right, bottom, top, left, canvas) {
@@ -377,7 +376,7 @@ const data = {
   getPriceLevel: function (i) {
     return ticker.transformIndex(Math.round(i));
   },
-  svp: function(i) {
+  svp: function (i) {
     const priceLevel = svp[this.getPriceLevel(i)];
     if (priceLevel) {
       return priceLevel.quantity;
@@ -687,4 +686,5 @@ window.onload = function () {
     drawOnContainer(dataContainer, canvasTabBottom);
     drawOnContainer(tabContainer, canvasTabBottom);
   });
+
 };

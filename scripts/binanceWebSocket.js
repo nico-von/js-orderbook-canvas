@@ -22,8 +22,6 @@ export function initialiseWebSocket(dataTicker, restQtyLimit, eventToDispatch, l
         if(eventToDispatch){
           document.dispatchEvent(eventToDispatch);  
         }
-        // console.log(lobDepth)
-        // console.log(lastTrade)
     })
     return;
 }

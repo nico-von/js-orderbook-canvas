@@ -1,11 +1,6 @@
+import { commitToDepth } from "./itemCommitAlgorithms.js";
 // for binance usd-m futures only
 // this utilises recursion
-
-// SAMPLE DEPTH OBJECT:
-// depth = {
-//     bids: {},
-//     asks: {}
-// };
 
 // buffer related variables
 let buffer = [];
@@ -18,46 +13,6 @@ async function getSnapshot(ticker, limit) {
     `https://fapi.binance.com/fapi/v1/depth?symbol=${ticker}&limit=${limit}`
   );
   return await response.json();
-}
-
-function commitToDepth(snapshot, lobDepth) {
-  // populate accordingly
-  let bids = snapshot.e ? snapshot.b : snapshot.bids;
-  let asks = snapshot.e ? snapshot.a : snapshot.asks;
-
-  function iter(arr, type) {
-    for (let item of arr) {
-      // we need to convert this to string
-      let price = item[0];
-      let qty = parseFloat(item[1]);
-
-      if (type == "bid") {
-        if (qty === 0) {
-          delete lobDepth.bids[price];
-          continue;
-        }
-
-        lobDepth.bids[price] = {
-          price,
-          qty,
-          priceFloat: parseFloat(price),
-        };
-      } else if (type == "ask") {
-        if (qty === 0) {
-          delete lobDepth.asks[price];
-          continue;
-        }
-
-        lobDepth.asks[price] = {
-          price,
-          qty,
-          priceFloat: parseFloat(price),
-        };
-      }
-    }
-  }
-  iter(bids, "bid");
-  iter(asks, "ask");
 }
 
 async function applySnapshot(ticker, limit, lobDepth) {
