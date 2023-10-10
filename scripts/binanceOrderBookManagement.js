@@ -38,8 +38,9 @@ function commitToDepth(snapshot, lobDepth) {
         }
 
         lobDepth.bids[price] = {
-          price: parseFloat(price),
+          price,
           qty,
+          priceFloat: parseFloat(price),
         };
       } else if (type == "ask") {
         if (qty === 0) {
@@ -48,8 +49,9 @@ function commitToDepth(snapshot, lobDepth) {
         }
 
         lobDepth.asks[price] = {
-          price: parseFloat(price),
+          price,
           qty,
+          priceFloat: parseFloat(price),
         };
       }
     }
