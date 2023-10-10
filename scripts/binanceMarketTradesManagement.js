@@ -1,7 +1,9 @@
 // for binance usd-m only
-export const lastTrade = {};
 
-export async function manageMarketTrades(data) {
+// Initialise last trade with blank object 
+// lastTrade = {};
+
+export async function manageMarketTrades(data, lastTrade) {
     const key = data.p;
     const price = parseFloat(data.p);
     const type = data.m ? "sold" : "bought";
