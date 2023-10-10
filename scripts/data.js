@@ -8,7 +8,7 @@ import { manageTicker } from "./binanceTickerData.js";
 
 // this function will only be called once from the
 // index.js module
-async function initialiseTicker(dataTicker, clientTickSize, dataObject) {
+async function initialiseTicker(dataTicker, clientTickSize, decimalLength, dataObject) {
   // client tick size is the tick size required by the client
   // and not the tick size from the binance stream
 
@@ -18,8 +18,11 @@ async function initialiseTicker(dataTicker, clientTickSize, dataObject) {
   const depth = {
     bids: {},
     asks: {},
-    clientTickSize, 
-    tickerTickSize: tickSize
+    tickInfo: {
+      clientTickSize,
+      actualTickSize: tickSize,
+      decimalLength: decimalLength
+    }
   };
 
   // market trades object
