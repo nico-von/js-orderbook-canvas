@@ -21,7 +21,7 @@ async function initialiseTicker(dataTicker, clientTickSize, decimalLength, dataO
     tickInfo: {
       clientTickSize,
       actualTickSize: tickSize,
-      decimalLength: decimalLength
+      decimalLength
     }
   };
 
@@ -46,4 +46,4 @@ async function initialiseTicker(dataTicker, clientTickSize, decimalLength, dataO
   });
 }
 
-initialiseTicker("BTCUSDT", {});
+initialiseTicker("BTCUSDT", 10, 2);

@@ -50,13 +50,17 @@ function commitItemWithoutClientTick(item, type, lobDepth) {
 }
 
 function commitItemWithClientTick(item, type, lobDepth) {
-  let price = item[0];
+  // parseFloat price here to be able to 
+  // calculate its nearest tick
+
+  let price = parseFloat(item[0]);
   let qty = parseFloat(item[1]);
 
   //get scale price as target
   const targetPrice = roundToNearestTick(
     price,
-    lobDepth.tickInfo.clienTickSize,
+    lobDepth.tickInfo.clientTickSize,
     lobDepth.tickInfo.decimalLength
   );
+  console.log(targetPrice)
 }
