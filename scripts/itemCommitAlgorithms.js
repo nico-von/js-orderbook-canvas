@@ -1,4 +1,7 @@
-import { roundToNearestTick } from "./numberManipulationFunctions.js";
+import {
+  roundToNearestTick,
+  sumAllValues,
+} from "./numberManipulationFunctions.js";
 
 export function commitToDepth(snapshot, lobDepth) {
   // populate accordingly
@@ -49,7 +52,7 @@ function commitItemWithoutClientTick(item, type, lobDepth) {
   }
 }
 
-function processTargetPrice(targetPriceObject, qty, decimalLength, tickSize) {
+function processTargetPrice(targetPriceObject, originalPrice, qty) {
   // get qty of target price, if 0
   // normally, here we do not really add them,
   // but since the limit orders are update by
@@ -65,6 +68,14 @@ function processTargetPrice(targetPriceObject, qty, decimalLength, tickSize) {
   // 20012, 20013, 20014, 20015]
   // sumOfQuantities: SUM of quantityOfPrices
   // }
+  targetPriceObject.quantities[originalPrice] = qty;
+  let sumOfQuantities = sumAllValues(targetPriceObject.qty);
+  if (sumOfQuantities == 0) {
+    return false;
+  } else {
+    targetPriceObject.qty = sumOfQuantities;
+    return targetPriceObject;
+  }
 }
 
 function commitItemWithClientTick(item, type, lobDepth) {
@@ -79,32 +90,40 @@ function commitItemWithClientTick(item, type, lobDepth) {
   const targetPrice = roundToNearestTick(price, clientTickSize, decimalLength);
 
   const targetPriceObject = {
-    quantities: [],
+    quantities: {},
     qty: 0,
   };
 
   if (type == "bid") {
-    // set if price object is undefined
-    if (!lobDepth.bids[targetPrice]) {
-      lobDepth.bids[targetPrice] = targetPriceObject;
-    }
-
-    processTargetPrice(
-      lobDepth.bids[targetPrice],
-      qty,
-      decimalLength,
-      clientTickSize
+    updatedPriceObject = processTargetPrice(
+      lobDepth.bids[targetPrice]
+        ? targetPriceObject
+        : lobDepth.bids[targetPrice],
+      price,
+      qty
     );
+
+    if (!updatedPriceObject) {
+      delete lobDepth.bids[targetPrice];
+      return;
+    } 
+
+    lobDepth.bids[targetPrice] = updatedPriceObject;
+
   } else if (type == "ask") {
-    if (!lobDepth.asks[targetPrice]) {
-      lobDepth.asks[targetPrice] = targetPriceObject;
+    updatedPriceObject = processTargetPrice(
+      lobDepth.asks[targetPrice]
+        ? targetPriceObject
+        : lobDepth.asks[targetPrice],
+      price,
+      qty
+    );
+
+    if (!updatedPriceObject) {
+      delete lobDepth.asks[targetPrice];
+      return;
     }
 
-    processTargetPrice(
-      lobDepth.asks[targetPrice],
-      qty,
-      decimalLength,
-      clientTickSize
-    );
+    lobDepth.asks[targetPrice] = updatedPriceObject;
   }
 }
