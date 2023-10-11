@@ -106,10 +106,9 @@ function commitItemWithClientTick(item, type, lobDepth) {
     if (!updatedPriceObject) {
       delete lobDepth.bids[targetPrice];
       return;
-    } 
+    }
 
     lobDepth.bids[targetPrice] = updatedPriceObject;
-
   } else if (type == "ask") {
     const updatedPriceObject = processTargetPrice(
       lobDepth.asks[targetPrice]

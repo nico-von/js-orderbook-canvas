@@ -1,4 +1,5 @@
 // import { ticker, depth, trades, svp } from "./data.js";
+import { initialiseTicker } from "./data.js";
 // class and function declarations
 class OrderFlowCanvas {
   constructor(right, bottom, top, left, canvas) {
@@ -372,50 +373,53 @@ const canvasTabTop = 0;
 let canvasTabBottom = 15;
 const canvasTabOffset = 3.5;
 const tabs = ["svp", "delta", "bid", "sell", "price", "buy", "ask", "delta"];
-const data = {
-  getPriceLevel: function (i) {
-    return ticker.transformIndex(Math.round(i));
-  },
-  svp: function (i) {
-    const priceLevel = svp[this.getPriceLevel(i)];
-    if (priceLevel) {
-      return priceLevel.quantity;
-    }
-    return "";
-  },
-  bid: function (i) {
-    const priceLevel = depth[this.getPriceLevel(i)];
 
-    if (priceLevel && priceLevel.bid) {
-      return priceLevel.bid;
-    }
-    return "";
-  },
-  buy: function (i) {
-    const priceLevel = trades[this.getPriceLevel(i)];
-    if (priceLevel && priceLevel.type == "buy") {
-      return priceLevel.quantity;
-    }
-    return "";
-  },
-  price: function (i) {
-    return this.getPriceLevel(i);
-  },
-  sell: function (i) {
-    const priceLevel = trades[this.getPriceLevel(i)];
-    if (priceLevel && priceLevel.type == "sell") {
-      return priceLevel.quantity;
-    }
-    return "";
-  },
-  ask: function (i) {
-    const priceLevel = depth[this.getPriceLevel(i)];
-    if (priceLevel && priceLevel.ask) {
-      return priceLevel.ask;
-    }
-    return "";
-  },
-};
+// DATA
+// getPriceLevel: function (i) {
+//   return ticker.transformIndex(Math.round(i));
+// },
+// svp: function (i) {
+//   const priceLevel = svp[this.getPriceLevel(i)];
+//   if (priceLevel) {
+//     return priceLevel.quantity;
+//   }
+//   return "";
+// },
+// bid: function (i) {
+//   const priceLevel = depth[this.getPriceLevel(i)];
+
+//   if (priceLevel && priceLevel.bid) {
+//     return priceLevel.bid;
+//   }
+//   return "";
+// },
+// buy: function (i) {
+//   const priceLevel = trades[this.getPriceLevel(i)];
+//   if (priceLevel && priceLevel.type == "buy") {
+//     return priceLevel.quantity;
+//   }
+//   return "";
+// },
+// price: function (i) {
+//   return this.getPriceLevel(i);
+// },
+// sell: function (i) {
+//   const priceLevel = trades[this.getPriceLevel(i)];
+//   if (priceLevel && priceLevel.type == "sell") {
+//     return priceLevel.quantity;
+//   }
+//   return "";
+// },
+// ask: function (i) {
+//   const priceLevel = depth[this.getPriceLevel(i)];
+//   if (priceLevel && priceLevel.ask) {
+//     return priceLevel.ask;
+//   }
+//   return "";
+// },
+const data = {};
+initialiseTicker("BTCUSDT", 10, 2, data) 
+
 // Container Settings
 const mainCanvasRight = 700;
 const mainCanvasBottom = 500;
@@ -581,37 +585,37 @@ function gridDraw(i, nextY) {
 function dataDraw(i, nextY) {
   // sample data rendering
   this.ctx.fillStyle = dataTextColour;
-  for (let j = 0; j < this.gridColumnCount; j++) {
-    let dataText = "";
-    switch (j) {
-      case 0:
-        dataText = data.svp(i);
-        break;
-      case 2:
-        dataText = data.bid(i);
-        break;
-      case 3:
-        dataText = data.sell(i);
-        break;
-      case 4:
-        dataText = data.price(i);
-        break;
-      case 5:
-        dataText = data.buy(i);
-        break;
-      case 6:
-        dataText = data.ask(i);
-        break;
-      default:
-        dataText = "";
-    }
+  // for (let j = 0; j < this.gridColumnCount; j++) {
+  //   let dataText = "";
+  //   switch (j) {
+  //     case 0:
+  //       dataText = data.svp(i);
+  //       break;
+  //     case 2:
+  //       dataText = data.bid(i);
+  //       break;
+  //     case 3:
+  //       dataText = data.sell(i);
+  //       break;
+  //     case 4:
+  //       dataText = data.price(i);
+  //       break;
+  //     case 5:
+  //       dataText = data.buy(i);
+  //       break;
+  //     case 6:
+  //       dataText = data.ask(i);
+  //       break;
+  //     default:
+  //       dataText = "";
+  //   }
 
-    this.ctx.fillText(
-      dataText,
-      this.xCoordinate[j],
-      nextY * this.cellHeight + 16
-    );
-  }
+  //   this.ctx.fillText(
+  //     dataText,
+  //     this.xCoordinate[j],
+  //     nextY * this.cellHeight + 16
+  //   );
+  // }
 }
 
 function tabDraw() {
@@ -653,6 +657,7 @@ tabContent.draw = tabDraw;
 tabContent.children = [gridContent, dataContent];
 
 window.onload = function () {
+  console.log("HEY")
   // smoothen canvases
   smoothifyCanvases(gridContainer, gridContent);
   smoothifyCanvases(dataContainer, dataContent);
@@ -680,7 +685,7 @@ window.onload = function () {
   window.addEventListener("mouseup", mouseUpHandler);
 
   // initial draw - only on first depth populate
-  window.addEventListener("draw", (e) => {
+  document.addEventListener("draw", (e) => {
     // initial draw
     drawOnContainer(gridContainer, canvasTabBottom);
     drawOnContainer(dataContainer, canvasTabBottom);
