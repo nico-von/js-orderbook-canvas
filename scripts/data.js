@@ -42,7 +42,7 @@ async function initialiseTicker(dataTicker, clientTickSize, decimalLength, dataO
 
   document.addEventListener("draw", (e) => {
 
-    
+    console.log(depth);
   });
 }
 

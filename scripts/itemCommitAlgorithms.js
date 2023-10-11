@@ -69,7 +69,7 @@ function processTargetPrice(targetPriceObject, originalPrice, qty) {
   // sumOfQuantities: SUM of quantityOfPrices
   // }
   targetPriceObject.quantities[originalPrice] = qty;
-  let sumOfQuantities = sumAllValues(targetPriceObject.qty);
+  let sumOfQuantities = sumAllValues(targetPriceObject.quantities);
   if (sumOfQuantities == 0) {
     return false;
   } else {
@@ -95,10 +95,10 @@ function commitItemWithClientTick(item, type, lobDepth) {
   };
 
   if (type == "bid") {
-    updatedPriceObject = processTargetPrice(
+    const updatedPriceObject = processTargetPrice(
       lobDepth.bids[targetPrice]
-        ? targetPriceObject
-        : lobDepth.bids[targetPrice],
+        ? lobDepth.bids[targetPrice]
+        : targetPriceObject,
       price,
       qty
     );
@@ -111,10 +111,10 @@ function commitItemWithClientTick(item, type, lobDepth) {
     lobDepth.bids[targetPrice] = updatedPriceObject;
 
   } else if (type == "ask") {
-    updatedPriceObject = processTargetPrice(
+    const updatedPriceObject = processTargetPrice(
       lobDepth.asks[targetPrice]
-        ? targetPriceObject
-        : lobDepth.asks[targetPrice],
+        ? lobDepth.asks[targetPrice]
+        : targetPriceObject,
       price,
       qty
     );
