@@ -49,18 +49,62 @@ function commitItemWithoutClientTick(item, type, lobDepth) {
   }
 }
 
+function processTargetPrice(targetPriceObject, qty, decimalLength, tickSize) {
+  // get qty of target price, if 0
+  // normally, here we do not really add them,
+  // but since the limit orders are update by
+  // net basis, we need to somehow store
+  // the values and then calculate the total
+  // values.. we need to do this because
+  // the values are not always updated to their
+  // net values
+  // i am thinking of using this type of
+  // price data
+  // 20010 : {
+  // quantityOfPrices: [qty of 20005, 20006, 20007, 20008, 20009, 20010, 20011,
+  // 20012, 20013, 20014, 20015]
+  // sumOfQuantities: SUM of quantityOfPrices
+  // }
+}
+
 function commitItemWithClientTick(item, type, lobDepth) {
-  // parseFloat price here to be able to 
+  // parseFloat price here to be able to
   // calculate its nearest tick
 
   let price = parseFloat(item[0]);
   let qty = parseFloat(item[1]);
-
+  let { decimalLength } = lobDepth.tickInfo;
+  let { clientTickSize } = lobDepth.tickInfo;
   //get scale price as target
-  const targetPrice = roundToNearestTick(
-    price,
-    lobDepth.tickInfo.clientTickSize,
-    lobDepth.tickInfo.decimalLength
-  );
-  console.log(targetPrice)
+  const targetPrice = roundToNearestTick(price, clientTickSize, decimalLength);
+
+  const targetPriceObject = {
+    quantities: [],
+    qty: 0,
+  };
+
+  if (type == "bid") {
+    // set if price object is undefined
+    if (!lobDepth.bids[targetPrice]) {
+      lobDepth.bids[targetPrice] = targetPriceObject;
+    }
+
+    processTargetPrice(
+      lobDepth.bids[targetPrice],
+      qty,
+      decimalLength,
+      clientTickSize
+    );
+  } else if (type == "ask") {
+    if (!lobDepth.asks[targetPrice]) {
+      lobDepth.asks[targetPrice] = targetPriceObject;
+    }
+
+    processTargetPrice(
+      lobDepth.asks[targetPrice],
+      qty,
+      decimalLength,
+      clientTickSize
+    );
+  }
 }
