@@ -9,3 +9,4 @@ export function roundToNearestTick(x, tickSize, decimalLength) {
 export function sumAllValues(object) {
   return Object.values(object).reduce((a, b) => a + b, 0);
 }
+

@@ -1,5 +1,5 @@
 // import { ticker, depth, trades, svp } from "./data.js";
-import { initialiseTicker } from "./data.js";
+import { initialiseTicker, getPriceLevel, getBid, getAsk } from "./data.js";
 // class and function declarations
 class OrderFlowCanvas {
   constructor(right, bottom, top, left, canvas) {
@@ -418,7 +418,8 @@ const tabs = ["svp", "delta", "bid", "sell", "price", "buy", "ask", "delta"];
 //   return "";
 // },
 const data = {};
-initialiseTicker("BTCUSDT", 10, 2, data) 
+
+initialiseTicker("BTCUSDT", 10, 1, data) 
 
 // Container Settings
 const mainCanvasRight = 700;
@@ -585,37 +586,40 @@ function gridDraw(i, nextY) {
 function dataDraw(i, nextY) {
   // sample data rendering
   this.ctx.fillStyle = dataTextColour;
-  // for (let j = 0; j < this.gridColumnCount; j++) {
-  //   let dataText = "";
-  //   switch (j) {
-  //     case 0:
-  //       dataText = data.svp(i);
-  //       break;
-  //     case 2:
-  //       dataText = data.bid(i);
-  //       break;
-  //     case 3:
-  //       dataText = data.sell(i);
-  //       break;
-  //     case 4:
-  //       dataText = data.price(i);
-  //       break;
-  //     case 5:
-  //       dataText = data.buy(i);
-  //       break;
-  //     case 6:
-  //       dataText = data.ask(i);
-  //       break;
-  //     default:
-  //       dataText = "";
-  //   }
 
-  //   this.ctx.fillText(
-  //     dataText,
-  //     this.xCoordinate[j],
-  //     nextY * this.cellHeight + 16
-  //   );
-  // }
+  for (let j = 0; j < this.gridColumnCount; j++) {
+    let dataText = "";
+    switch (j) {
+      case 0:
+        // dataText = data.svp(i);
+        break;
+      case 2:
+        let bid = getBid(i, data, 2);
+        dataText = bid ? bid : "";
+        break;
+      case 3:
+        // dataText = data.sell(i);
+        break;
+      case 4:
+        dataText = getPriceLevel(i, data);
+        break;
+      case 5:
+        // dataText = data.buy(i);
+        break;
+      case 6:
+        let ask = getAsk(i, data, 2);
+        dataText = ask ? ask : "";
+        break;
+      default:
+        dataText = "";
+    }
+
+    this.ctx.fillText(
+      dataText,
+      this.xCoordinate[j],
+      nextY * this.cellHeight + 16
+    );
+  }
 }
 
 function tabDraw() {

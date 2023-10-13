@@ -24,7 +24,8 @@ export function commitToDepth(snapshot, lobDepth) {
 }
 
 function commitItemWithoutClientTick(item, type, lobDepth) {
-  let price = item[0];
+  let {decimalLength} = lobDepth;
+  let price = parseFloat(item[0]).toFixed(decimalLength);
   let qty = parseFloat(item[1]);
 
   if (type == "bid") {
@@ -70,7 +71,7 @@ function processTargetPrice(targetPriceObject, originalPrice, qty) {
   // }
   targetPriceObject.quantities[originalPrice] = qty;
   let sumOfQuantities = sumAllValues(targetPriceObject.quantities);
-  if (sumOfQuantities == 0) {
+  if (sumOfQuantities <= 0) {
     return false;
   } else {
     targetPriceObject.qty = sumOfQuantities;
@@ -81,13 +82,12 @@ function processTargetPrice(targetPriceObject, originalPrice, qty) {
 function commitItemWithClientTick(item, type, lobDepth) {
   // parseFloat price here to be able to
   // calculate its nearest tick
-
   let price = parseFloat(item[0]);
   let qty = parseFloat(item[1]);
-  let { decimalLength } = lobDepth.tickInfo;
+  let { decimalLength } = lobDepth;
   let { clientTickSize } = lobDepth.tickInfo;
   //get scale price as target
-  const targetPrice = roundToNearestTick(price, clientTickSize, decimalLength);
+  const targetPrice = roundToNearestTick(price, clientTickSize, decimalLength).toFixed(decimalLength);
 
   const targetPriceObject = {
     quantities: {},

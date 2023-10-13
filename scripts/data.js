@@ -20,34 +20,49 @@ export async function initialiseTicker(
 
   const { ticker, tickSize, lastPrice } = await manageTicker(dataTicker);
 
-  const tickAdjustedLastPrice = roundToNearestTick(
-    lastPrice,
-    tickSize,
-    decimalLength
-  );
+  const tickSizeToUse = clientTickSize > tickSize ? clientTickSize : +tickSize;
+  let tickAdjustedLastPrice = +lastPrice;
+
+  if (tickSizeToUse > tickSize) {
+    tickAdjustedLastPrice = roundToNearestTick(
+      lastPrice,
+      clientTickSize,
+      decimalLength
+    );
+  }
 
   // depth object
-  dataObject.depth = {
-    bids: {},
-    asks: {},
-    tickInfo: {
-      clientTickSize,
-      actualTickSize: tickSize,
+  if (tickSizeToUse > tickSize) {
+    dataObject.depth = {
+      bids: {},
+      asks: {},
+      tickInfo: {
+        clientTickSize,
+        actualTickSize: tickSize
+      },
       decimalLength,
-    },
-  };
-
+    };
+  } else {
+    dataObject.depth = {
+      bids: {},
+      asks: {},
+      decimalLength,
+    };
+  }
   // market trades object
   dataObject.lastTrade = {};
 
   // canvas manipulation
-  dataObject.transformIndex = scaleLinear()
+  const canvasScale = scaleLinear()
     .domain([1, 0])
-    .range([tickAdjustedLastPrice, tickAdjustedLastPrice + tickSize]);
+    .range([tickAdjustedLastPrice, tickAdjustedLastPrice + tickSizeToUse]);
+
+  dataObject.transformIndex = function (i) {
+    return canvasScale(i).toFixed(decimalLength);
+  };
 
   // eventObject
   const drawEvent = new Event("draw");
-
   // start web socket
   initialiseWebSocket(
     ticker.toLowerCase(),
@@ -56,6 +71,45 @@ export async function initialiseTicker(
     dataObject.depth,
     dataObject.lastTrade
   );
+}
 
-  document.addEventListener("draw", (e) => {});
+export function getPriceLevel(i, dataObject) {
+  if (!(dataObject && dataObject.transformIndex)) {
+    return;
+  }
+
+  return dataObject.transformIndex(Math.round(i));
+}
+
+export function getBid(i, dataObject, decimalLength) {
+  if (!(dataObject && dataObject.depth)) {
+    return;
+  }
+  const priceLevel = getPriceLevel(i, dataObject);
+  const bids = dataObject.depth.bids[priceLevel];
+  if (bids) {
+    const asks = dataObject.depth.asks[priceLevel];
+    const netBids = asks ? bids.qty - asks.qty : bids.qty;
+    if (netBids > 0) {
+      return netBids.toFixed(decimalLength);
+    }
+  }
+  return;
+}
+
+export function getAsk(i, dataObject, decimalLength) {
+  if (!(dataObject && dataObject.depth)) {
+    return;
+  }
+
+  const priceLevel = getPriceLevel(i, dataObject);
+  const asks = dataObject.depth.asks[priceLevel];
+  if (asks) {
+    const bids = dataObject.depth.bids[priceLevel];
+    const netAsks = bids ? asks.qty - bids.qty : asks.qty;
+    if (netAsks > 0) {
+      return netAsks.toFixed(decimalLength);
+    }
+  }
+  return;
 }
