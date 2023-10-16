@@ -1,5 +1,12 @@
 // import { ticker, depth, trades, svp } from "./data.js";
-import { initialiseTicker, getPriceLevel, getBid, getAsk } from "./data.js";
+import {
+  initialiseTicker,
+  getPriceLevel,
+  getBid,
+  getAsk,
+  getBuy,
+  getSell,
+} from "./data.js";
 // class and function declarations
 class OrderFlowCanvas {
   constructor(right, bottom, top, left, canvas) {
@@ -361,7 +368,12 @@ function mouseDblClickHandler(e) {
 
   //clear trades
   if (gridContainer.isOnCanvas(x, y)) {
-    Object.keys(trades).forEach((key) => delete trades[key]);
+    Object.keys(data.marketTrades.buy).forEach((key) => {
+      delete data.marketTrades.buy[key];
+    });
+    Object.keys(data.marketTrades.sell).forEach((key) => {
+      delete data.marketTrades.sell[key];
+    });
   }
 }
 // GLOBALS
@@ -419,7 +431,7 @@ const tabs = ["svp", "delta", "bid", "sell", "price", "buy", "ask", "delta"];
 // },
 const data = {};
 
-initialiseTicker("BTCUSDT", 10, 1, data) 
+initialiseTicker("BTCUSDT", 5, 1, data);
 
 // Container Settings
 const mainCanvasRight = 700;
@@ -598,13 +610,15 @@ function dataDraw(i, nextY) {
         dataText = bid ? bid : "";
         break;
       case 3:
-        // dataText = data.sell(i);
+        let sell = getSell(i, data, 2);
+        dataText = sell ? sell : "";
         break;
       case 4:
         dataText = getPriceLevel(i, data);
         break;
       case 5:
-        // dataText = data.buy(i);
+        let buy = getBuy(i, data, 2);
+        dataText = buy ? buy : "";
         break;
       case 6:
         let ask = getAsk(i, data, 2);
@@ -661,7 +675,7 @@ tabContent.draw = tabDraw;
 tabContent.children = [gridContent, dataContent];
 
 window.onload = function () {
-  console.log("HEY")
+  console.log("HEY");
   // smoothen canvases
   smoothifyCanvases(gridContainer, gridContent);
   smoothifyCanvases(dataContainer, dataContent);
@@ -695,5 +709,4 @@ window.onload = function () {
     drawOnContainer(dataContainer, canvasTabBottom);
     drawOnContainer(tabContainer, canvasTabBottom);
   });
-
 };

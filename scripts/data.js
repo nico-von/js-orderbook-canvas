@@ -9,6 +9,21 @@ import { roundToNearestTick } from "./numberManipulationFunctions.js";
 
 // this function will only be called once from the
 // index.js module
+
+const depth = {
+  bids: {},
+  asks: {},
+  tickSize: 0,
+  decimalLength: 0,
+};
+
+const marketTrades = {
+  buy: {},
+  sell: {},
+  tickSize: 0,
+  decimalLength: 0,
+};
+
 export async function initialiseTicker(
   dataTicker,
   clientTickSize,
@@ -23,34 +38,21 @@ export async function initialiseTicker(
   const tickSizeToUse = clientTickSize > tickSize ? clientTickSize : +tickSize;
   let tickAdjustedLastPrice = +lastPrice;
 
-  if (tickSizeToUse > tickSize) {
-    tickAdjustedLastPrice = roundToNearestTick(
-      lastPrice,
-      clientTickSize,
-      decimalLength
-    );
-  }
-
   // depth object
-  if (tickSizeToUse > tickSize) {
-    dataObject.depth = {
-      bids: {},
-      asks: {},
-      tickInfo: {
-        clientTickSize,
-        actualTickSize: tickSize
-      },
-      decimalLength,
-    };
-  } else {
-    dataObject.depth = {
-      bids: {},
-      asks: {},
-      decimalLength,
-    };
-  }
+  dataObject.depth = depth;
+  dataObject.depth.tickSize = tickSizeToUse;
+  dataObject.depth.decimalLength = decimalLength;
+
   // market trades object
-  dataObject.lastTrade = {};
+  dataObject.marketTrades = marketTrades;
+  dataObject.marketTrades.tickSize = tickSizeToUse;
+  dataObject.marketTrades.decimalLength = decimalLength;
+
+  if (tickSizeToUse > tickSize) {
+    tickAdjustedLastPrice = roundToNearestTick(lastPrice, clientTickSize);
+    dataObject.depth.customTickSize = true;
+    dataObject.marketTrades.customTickSize = true;
+  }
 
   // canvas manipulation
   const canvasScale = scaleLinear()
@@ -63,13 +65,14 @@ export async function initialiseTicker(
 
   // eventObject
   const drawEvent = new Event("draw");
+
   // start web socket
   initialiseWebSocket(
     ticker.toLowerCase(),
     "1000",
     drawEvent,
     dataObject.depth,
-    dataObject.lastTrade
+    dataObject.marketTrades
   );
 }
 
@@ -112,4 +115,30 @@ export function getAsk(i, dataObject, decimalLength) {
     }
   }
   return;
+}
+
+export function getBuy(i, dataObject, decimalLength) {
+  if (!(dataObject && dataObject.marketTrades)) {
+    return;
+  }
+
+  const priceLevel = getPriceLevel(i, dataObject);
+  const buy = dataObject.marketTrades.buy[priceLevel];
+
+  if (buy) {
+    return buy.qty.toFixed(decimalLength);
+  }
+}
+
+export function getSell(i, dataObject, decimalLength) {
+  if (!(dataObject && dataObject.marketTrades)) {
+    return;
+  }
+
+  const priceLevel = getPriceLevel(i, dataObject);
+  const sell = dataObject.marketTrades.sell[priceLevel];
+
+  if (sell) {
+    return sell.qty.toFixed(decimalLength);
+  }
 }

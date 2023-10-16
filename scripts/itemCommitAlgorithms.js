@@ -12,7 +12,7 @@ export function commitToDepth(snapshot, lobDepth) {
     for (let item of arr) {
       // we need to save these according to
       // client tick sizes
-      if (!lobDepth.tickInfo) {
+      if (!lobDepth.customTickSize) {
         commitItemWithoutClientTick(item, type, lobDepth);
       } else {
         commitItemWithClientTick(item, type, lobDepth);
@@ -24,7 +24,7 @@ export function commitToDepth(snapshot, lobDepth) {
 }
 
 function commitItemWithoutClientTick(item, type, lobDepth) {
-  let {decimalLength} = lobDepth;
+  let { decimalLength } = lobDepth;
   let price = parseFloat(item[0]).toFixed(decimalLength);
   let qty = parseFloat(item[1]);
 
@@ -53,7 +53,7 @@ function commitItemWithoutClientTick(item, type, lobDepth) {
   }
 }
 
-function processTargetPrice(targetPriceObject, originalPrice, qty) {
+function processTargetPrice(targetPriceObject, originalPrice, qty, isDepth) {
   // get qty of target price, if 0
   // normally, here we do not really add them,
   // but since the limit orders are update by
@@ -69,7 +69,15 @@ function processTargetPrice(targetPriceObject, originalPrice, qty) {
   // 20012, 20013, 20014, 20015]
   // sumOfQuantities: SUM of quantityOfPrices
   // }
-  targetPriceObject.quantities[originalPrice] = qty;
+
+  if (isDepth) {
+    targetPriceObject.quantities[originalPrice] = qty;
+  } else {
+    const previousQuantity = targetPriceObject.quantities[originalPrice];
+    targetPriceObject.quantities[originalPrice] = previousQuantity
+      ? previousQuantity + qty
+      : qty;
+  }
   let sumOfQuantities = sumAllValues(targetPriceObject.quantities);
   if (sumOfQuantities <= 0) {
     return false;
@@ -85,9 +93,11 @@ function commitItemWithClientTick(item, type, lobDepth) {
   let price = parseFloat(item[0]);
   let qty = parseFloat(item[1]);
   let { decimalLength } = lobDepth;
-  let { clientTickSize } = lobDepth.tickInfo;
+  let { tickSize } = lobDepth;
   //get scale price as target
-  const targetPrice = roundToNearestTick(price, clientTickSize, decimalLength).toFixed(decimalLength);
+  const targetPrice = roundToNearestTick(price, tickSize).toFixed(
+    decimalLength
+  );
 
   const targetPriceObject = {
     quantities: {},
@@ -100,7 +110,8 @@ function commitItemWithClientTick(item, type, lobDepth) {
         ? lobDepth.bids[targetPrice]
         : targetPriceObject,
       price,
-      qty
+      qty,
+      true
     );
 
     if (!updatedPriceObject) {
@@ -115,7 +126,8 @@ function commitItemWithClientTick(item, type, lobDepth) {
         ? lobDepth.asks[targetPrice]
         : targetPriceObject,
       price,
-      qty
+      qty,
+      true
     );
 
     if (!updatedPriceObject) {
@@ -124,5 +136,78 @@ function commitItemWithClientTick(item, type, lobDepth) {
     }
 
     lobDepth.asks[targetPrice] = updatedPriceObject;
+  }
+}
+
+function commitLastItemWithoutClientTick(lastTrade, marketTrades) {
+  const { price, type, qty } = lastTrade;
+  const { decimalLength } = marketTrades;
+
+  const priceKey = parseFloat(price).toFixed(decimalLength);
+
+  if (type == "s") {
+    let quantity = marketTrades.sell[priceKey]
+      ? marketTrades.sell[priceKey].qty + qty
+      : qty;
+
+    marketTrades.sell[priceKey] = {
+      qty: quantity
+    };
+  } else if (type == "b") {
+    let quantity = marketTrades.buy[priceKey]
+      ? marketTrades.buy[priceKey].qty + qty
+      : qty;
+
+    marketTrades.buy[priceKey] = {
+      qty: quantity
+    };
+  }
+}
+
+function commitLastItemWithClientTick(lastTrade, marketTrades) {
+  const { price, type, qty } = lastTrade;
+  const { tickSize, decimalLength } = marketTrades;
+  const targetPrice = roundToNearestTick(price, tickSize).toFixed(
+    decimalLength
+  );
+
+  const targetPriceObject = {
+    quantities: {},
+    qty: 0,
+  };
+
+  if (type == "s") {
+    const updatedPriceObject = processTargetPrice(
+      marketTrades.sell[targetPrice]
+        ? marketTrades.sell[targetPrice]
+        : targetPriceObject,
+      price,
+      qty,
+      false
+    );
+
+    if (updatedPriceObject) {
+      marketTrades.sell[targetPrice] = updatedPriceObject;
+    }
+  } else if (type == "b") {
+    const updatedPriceObject = processTargetPrice(
+      marketTrades.buy[targetPrice]
+        ? marketTrades.buy[targetPrice]
+        : targetPriceObject,
+      price,
+      qty,
+      false
+    );
+
+    if (updatedPriceObject) {
+      marketTrades.buy[targetPrice] = updatedPriceObject;
+    }
+  }
+}
+export function commitToMarketTrade(data, marketTrades) {
+  if (!marketTrades.customTickSize) {
+    commitLastItemWithoutClientTick(data, marketTrades);
+  } else {
+    commitLastItemWithClientTick(data, marketTrades);
   }
 }
