@@ -6,6 +6,7 @@ import {
   getAsk,
   getBuy,
   getSell,
+  getDelta
 } from "./data.js";
 // class and function declarations
 class OrderFlowCanvas {
@@ -385,7 +386,7 @@ function mouseDblClickHandler(e) {
 const canvasTabTop = 0;
 let canvasTabBottom = 15;
 const canvasTabOffset = 3.5;
-const tabs = ["svp", "delta", "bid", "sell", "price", "buy", "ask", "delta"];
+const tabs = ["svp", "cvp", "bid", "sell", "price", "buy", "ask", "delta"];
 
 // DATA
 // getPriceLevel: function (i) {
@@ -608,6 +609,11 @@ function dataDraw(i, nextY) {
         let svpSell = getSell(i, data, 2, true);
         dataText = `${svpBuy ? svpBuy : 0}, ${svpSell ? svpSell : 0}`;
         break;
+      case 1:
+        let cvpBuy = getBuy(i, data, 2, false);
+        let cvpSell = getSell(i, data, 2, false);
+        dataText = `${cvpBuy ? cvpBuy : 0}, ${cvpSell ? cvpSell : 0}`;
+        break;
       case 2:
         let bid = getBid(i, data, 2);
         dataText = bid ? bid : "";
@@ -626,6 +632,10 @@ function dataDraw(i, nextY) {
       case 6:
         let ask = getAsk(i, data, 2, false);
         dataText = ask ? ask : "";
+        break;
+      case 7:
+        let delta = getDelta(i, data, 2);
+        dataText = delta > 0 ? delta : "";
         break;
       default:
         dataText = "";

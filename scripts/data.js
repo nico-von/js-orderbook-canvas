@@ -160,3 +160,17 @@ export function getSell(i, dataObject, decimalLength, isSession) {
     return sell.qty.toFixed(decimalLength);
   }
 }
+
+export function getDelta(i, dataObject, decimalLength) {
+  if (!(dataObject && dataObject.marketTrades)) {
+    return;
+  }
+
+  const priceLevel = getPriceLevel(i, dataObject);
+
+  const sessionTrades = dataObject.marketTrades.session;
+  const buy = sessionTrades.buy[priceLevel];
+  const sell = sessionTrades.sell[priceLevel];
+
+  return ((buy ? buy.qty : 0) - (sell ? sell.qty : 0)).toFixed(decimalLength);
+}
