@@ -7,7 +7,7 @@ import {
   getBuy,
   getSell,
   getDelta
-} from "./data.js";
+} from "./data/data.js";
 // class and function declarations
 class OrderFlowCanvas {
   constructor(right, bottom, top, left, canvas) {

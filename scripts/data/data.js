@@ -1,7 +1,7 @@
 import { scaleLinear } from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
-import { initialiseWebSocket } from "./binanceWebSocket.js";
-import { manageTicker } from "./binanceTickerData.js";
-import { roundToNearestTick } from "./numberManipulationFunctions.js";
+import { initialiseWebSocket } from "../binance/binanceWebSocket.js";
+import { manageTicker } from "../binance/binanceTickerData.js";
+import { roundToNearestTick } from "../misc/numberManipulationFunctions.js";
 
 // use dataObject parameter here for the benefit of index.js
 // dataObject will originate from index.js and will be modified through

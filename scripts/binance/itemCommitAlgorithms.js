@@ -1,7 +1,7 @@
 import {
   roundToNearestTick,
   sumAllValues,
-} from "./numberManipulationFunctions.js";
+} from "../misc/numberManipulationFunctions.js";
 
 export function commitToDepth(snapshot, lobDepth) {
   // populate accordingly
