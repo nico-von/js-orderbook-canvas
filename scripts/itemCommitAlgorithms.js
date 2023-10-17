@@ -139,9 +139,12 @@ function commitItemWithClientTick(item, type, lobDepth) {
   }
 }
 
-function commitLastItemWithoutClientTick(lastTrade, marketTrades) {
+function commitLastItemWithoutClientTick(
+  lastTrade,
+  marketTrades,
+  decimalLength
+) {
   const { price, type, qty } = lastTrade;
-  const { decimalLength } = marketTrades;
 
   const priceKey = parseFloat(price).toFixed(decimalLength);
 
@@ -151,7 +154,7 @@ function commitLastItemWithoutClientTick(lastTrade, marketTrades) {
       : qty;
 
     marketTrades.sell[priceKey] = {
-      qty: quantity
+      qty: quantity,
     };
   } else if (type == "b") {
     let quantity = marketTrades.buy[priceKey]
@@ -159,14 +162,18 @@ function commitLastItemWithoutClientTick(lastTrade, marketTrades) {
       : qty;
 
     marketTrades.buy[priceKey] = {
-      qty: quantity
+      qty: quantity,
     };
   }
 }
 
-function commitLastItemWithClientTick(lastTrade, marketTrades) {
+function commitLastItemWithClientTick(
+  lastTrade,
+  marketTrades,
+  tickSize,
+  decimalLength
+) {
   const { price, type, qty } = lastTrade;
-  const { tickSize, decimalLength } = marketTrades;
   const targetPrice = roundToNearestTick(price, tickSize).toFixed(
     decimalLength
   );
@@ -204,10 +211,16 @@ function commitLastItemWithClientTick(lastTrade, marketTrades) {
     }
   }
 }
-export function commitToMarketTrade(data, marketTrades) {
-  if (!marketTrades.customTickSize) {
-    commitLastItemWithoutClientTick(data, marketTrades);
+export function commitToMarketTrade(
+  data,
+  marketTrades,
+  customTickSize,
+  tickSize,
+  decimalLength
+) {
+  if (!customTickSize) {
+    commitLastItemWithoutClientTick(data, marketTrades, decimalLength);
   } else {
-    commitLastItemWithClientTick(data, marketTrades);
+    commitLastItemWithClientTick(data, marketTrades, tickSize, decimalLength);
   }
 }

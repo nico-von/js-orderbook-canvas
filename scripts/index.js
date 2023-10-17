@@ -368,11 +368,12 @@ function mouseDblClickHandler(e) {
 
   //clear trades
   if (gridContainer.isOnCanvas(x, y)) {
-    Object.keys(data.marketTrades.buy).forEach((key) => {
-      delete data.marketTrades.buy[key];
+    const client = data.marketTrades.client;
+    Object.keys(client.buy).forEach((key) => {
+      delete client.buy[key];
     });
-    Object.keys(data.marketTrades.sell).forEach((key) => {
-      delete data.marketTrades.sell[key];
+    Object.keys(client.sell).forEach((key) => {
+      delete client.sell[key];
     });
   }
 }
@@ -603,7 +604,9 @@ function dataDraw(i, nextY) {
     let dataText = "";
     switch (j) {
       case 0:
-        // dataText = data.svp(i);
+        let svpBuy = getBuy(i, data, 2, true);
+        let svpSell = getSell(i, data, 2, true);
+        dataText = `${svpBuy ? svpBuy : 0}, ${svpSell ? svpSell : 0}`;
         break;
       case 2:
         let bid = getBid(i, data, 2);
@@ -617,11 +620,11 @@ function dataDraw(i, nextY) {
         dataText = getPriceLevel(i, data);
         break;
       case 5:
-        let buy = getBuy(i, data, 2);
+        let buy = getBuy(i, data, 2, false);
         dataText = buy ? buy : "";
         break;
       case 6:
-        let ask = getAsk(i, data, 2);
+        let ask = getAsk(i, data, 2, false);
         dataText = ask ? ask : "";
         break;
       default:

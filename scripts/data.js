@@ -15,13 +15,21 @@ const depth = {
   asks: {},
   tickSize: 0,
   decimalLength: 0,
+  customTickSize: false,
 };
 
 const marketTrades = {
-  buy: {},
-  sell: {},
+  client: {
+    buy: {},
+    sell: {},
+  },
+  session: {
+    buy: {},
+    sell: {},
+  },
   tickSize: 0,
   decimalLength: 0,
+  customTickSize: false,
 };
 
 export async function initialiseTicker(
@@ -117,26 +125,36 @@ export function getAsk(i, dataObject, decimalLength) {
   return;
 }
 
-export function getBuy(i, dataObject, decimalLength) {
+export function getBuy(i, dataObject, decimalLength, isSession) {
   if (!(dataObject && dataObject.marketTrades)) {
     return;
   }
-
   const priceLevel = getPriceLevel(i, dataObject);
-  const buy = dataObject.marketTrades.buy[priceLevel];
+  let buy;
+  if (isSession) {
+    buy = dataObject.marketTrades.session.buy[priceLevel];
+  } else {
+    buy = dataObject.marketTrades.client.buy[priceLevel];
+  }
 
   if (buy) {
     return buy.qty.toFixed(decimalLength);
   }
 }
 
-export function getSell(i, dataObject, decimalLength) {
+export function getSell(i, dataObject, decimalLength, isSession) {
   if (!(dataObject && dataObject.marketTrades)) {
     return;
   }
 
   const priceLevel = getPriceLevel(i, dataObject);
-  const sell = dataObject.marketTrades.sell[priceLevel];
+
+  let sell;
+  if (isSession) {
+    sell = dataObject.marketTrades.session.sell[priceLevel];
+  } else {
+    sell = dataObject.marketTrades.client.sell[priceLevel];
+  }
 
   if (sell) {
     return sell.qty.toFixed(decimalLength);

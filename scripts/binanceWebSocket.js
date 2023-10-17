@@ -1,7 +1,7 @@
 import { manageOrderBook } from "./binanceOrderBookManagement.js";
 import { manageMarketTrades } from "./binanceMarketTradesManagement.js";
 
-export function initialiseWebSocket(dataTicker, restQtyLimit, eventToDispatch, lobDepth, lastTrade) {
+export function initialiseWebSocket(dataTicker, restQtyLimit, eventToDispatch, lobDepth, marketTrades) {
     const streams = [`${dataTicker}@depth`, `${dataTicker}@aggTrade`];
     const wsStream = `wss://fstream.binance.com/stream?streams=${streams.join(
         "/"
@@ -15,7 +15,7 @@ export function initialiseWebSocket(dataTicker, restQtyLimit, eventToDispatch, l
         if (e == "depthUpdate") {
            await manageOrderBook(data, dataTicker, restQtyLimit, lobDepth);
         } else if (e == "aggTrade") {
-           await manageMarketTrades(data, lastTrade);
+           await manageMarketTrades(data, marketTrades);
         }
         
         // for updating
