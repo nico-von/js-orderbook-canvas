@@ -28,6 +28,7 @@ export function mouseMoveHandler(e) {
   if (gridContainer.isOnCanvas(x, y)) {
     gridContainer.content.x = x;
     gridContainer.content.y = y;
+    dataContainer.content.y = y;
 
     // redraw containers
     drawOnContainer(gridContainer);

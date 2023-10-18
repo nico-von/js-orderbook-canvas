@@ -1,4 +1,4 @@
-import { drawGridCell, xManager } from "./canvasFunctions.js";
+import { drawGridCell, xManager, getYPosition } from "./canvasFunctions.js";
 import {
   getBuy,
   getSell,
@@ -30,11 +30,13 @@ export function gridDraw(i, nextY, start, end) {
   let yPosition = 0;
   if (this.x && this.y) {
     // get relative Y pos
-    // added back gridOffset to compensate offset
-    const relativeY = (this.y - this.currentY - this.gridOffset) / this.bottom;
-
-    // get y Position of selected cell
-    yPosition = Math.floor(relativeY * (this.bottom / this.cellHeight));
+    yPosition = getYPosition(
+      this.y,
+      this.currentY,
+      this.gridOffset,
+      this.bottom,
+      this.cellHeight
+    );
   }
 
   //render grid
@@ -80,7 +82,7 @@ export function gridDraw(i, nextY, start, end) {
 export function dataDraw(i, nextY, start, end) {
   const { dataTextColour, data, otherColsDecimalLength, gridColourObject } =
     this.addSettings;
-  // sample data rendering
+  // default fill style
   this.ctx.fillStyle = dataTextColour;
   // price data
   const currPrice = getPriceLevel(i, data);
@@ -120,7 +122,7 @@ export function dataDraw(i, nextY, start, end) {
             nextY,
             this.xCoordinate[j]
           );
-          this.ctx.fillStyle = gridColourObject.bestBid;
+          this.ctx.fillStyle = gridColourObject.bids;
           this.ctx.fill(grid[0]);
           this.ctx.fillStyle = dataTextColour;
         }

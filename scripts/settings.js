@@ -43,10 +43,14 @@ export const tabTextFont = "0.7rem 'Roboto-Mono', monospace";
 // grid colours
 export const gridColourObject = {
   default: "#ffffff",
-  a: "#4C4E52",
-  b: "#6F7378",
+  a: "#4C4E52F0",
+  b: "#6F7378F0",
   bestBid: "#155e15",
-  bestAsk: "#940e0c"
+  bestAsk: "#940e0c",
+  bids: "#478047",
+  asks: "#964848",
+  highlightAlpha: "4D",
+
 };
 
 //highlight X colour object, key, refers to tab number
