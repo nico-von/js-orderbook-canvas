@@ -113,7 +113,7 @@ export function dataDraw(i, nextY) {
         break;
       case 7:
         let delta = getDelta(i, data, otherColsDecimalLength);
-        dataText = delta > 0 ? delta : "";
+        dataText = delta != 0 ? delta : "";
         break;
       default:
         dataText = "";
