@@ -2,6 +2,7 @@ import { scaleLinear } from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
 import { initialiseWebSocket } from "../binance/binanceWebSocket.js";
 import { manageTicker } from "../binance/binanceTickerData.js";
 import { roundToNearestTick } from "../misc/numberManipulationFunctions.js";
+import { data } from "../settings.js";
 
 // use dataObject parameter here for the benefit of index.js
 // dataObject will originate from index.js and will be modified through
@@ -13,6 +14,8 @@ import { roundToNearestTick } from "../misc/numberManipulationFunctions.js";
 const depth = {
   bids: {},
   asks: {},
+  largestBid: 0,
+  largestAsk: 0,
   tickSize: 0,
   decimalLength: 0,
   customTickSize: false,
@@ -71,6 +74,10 @@ export async function initialiseTicker(
     return canvasScale(i).toFixed(decimalLength);
   };
 
+  dataObject.invertIndex = function (price) {
+    return canvasScale.invert(price).toFixed(decimalLength);
+  };
+
   // eventObject
   const drawEvent = new Event("draw");
 
@@ -92,6 +99,66 @@ export function getPriceLevel(i, dataObject) {
   return dataObject.transformIndex(Math.round(i));
 }
 
+export function getIndexLevel(price, dataObject) {
+  if (!(dataObject && dataObject.invertIndex)) {
+    return;
+  }
+
+  return dataObject.invertIndex(price);
+}
+
+export function getBestBid(dataObject) {
+  //returns the index of bestbid
+  if (!(dataObject && dataObject.depth)) {
+    return;
+  }
+  const bids = Object.keys(dataObject.depth.bids).map((d) => {
+    const bid = parseFloat(d);
+    if (bid) {
+      return bid;
+    }
+    return;
+  });
+  return getIndexLevel(Math.max(...bids), dataObject);
+}
+
+export function getBestAsk(dataObject) {
+  //returns the index of bestbid
+  if (!(dataObject && dataObject.depth)) {
+    return;
+  }
+  const asks = Object.keys(dataObject.depth.asks).map((d) => {
+    const ask = parseFloat(d);
+    if (ask) {
+      return ask;
+    }
+    return;
+  });
+  return getIndexLevel(Math.min(...asks), dataObject);
+}
+
+export function getLargestBid(dataObject) {
+  if (!(dataObject && dataObject.depth.largestBid)){
+    return;
+  }
+
+  return dataObject.depth.largestBid;
+}
+
+export function getRelativeLargestBid(start, end, dataObject){
+  if (!(dataObject && dataObject.depth)) {
+    return;
+  }
+  let largest = 0;
+  for (let i = start; i < end; i++){
+    const priceLevel = getPriceLevel(i, dataObject);
+    const bid = dataObject.depth.bids[priceLevel];
+    if (bid) {
+      largest = bid.qty > largest ? bid.qty : largest; 
+    }
+  }
+  return largest;
+}
 export function getBid(i, dataObject, decimalLength) {
   if (!(dataObject && dataObject.depth)) {
     return;

@@ -88,7 +88,7 @@ export const dataContent = new CanvasGridContent(
   gridColumns,
   undefined,
   undefined,
-  { dataTextColour, data, otherColsDecimalLength }
+  { dataTextColour, data, otherColsDecimalLength, gridColourObject }
 );
 // TAB
 

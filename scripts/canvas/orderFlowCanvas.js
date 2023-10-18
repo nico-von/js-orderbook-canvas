@@ -173,7 +173,7 @@ export class CanvasGridContent extends CanvasContent {
       }
 
       // ctx jobs
-      this.draw(i, nextY);
+      this.draw(i, nextY, this.startCell, endCell);
     }
   }
 }

@@ -29,6 +29,11 @@ function commitItemWithoutClientTick(item, type, lobDepth) {
   let qty = parseFloat(item[1]);
 
   if (type == "bid") {
+    // compare qty to largestBid
+    if(qty > lobDepth.largestBid){
+      lobDepth.largestBid = qty;
+    }
+
     if (qty === 0) {
       delete lobDepth.bids[price];
       return;
@@ -40,6 +45,10 @@ function commitItemWithoutClientTick(item, type, lobDepth) {
       priceFloat: parseFloat(price),
     };
   } else if (type == "ask") {
+    if(qty > lobDepth.largestAsk){
+      lobDepth.largestAsk = qty;
+    }
+
     if (qty === 0) {
       delete lobDepth.asks[price];
       return;
@@ -113,11 +122,17 @@ function commitItemWithClientTick(item, type, lobDepth) {
       qty,
       true
     );
-
+    
     if (!updatedPriceObject) {
       delete lobDepth.bids[targetPrice];
       return;
     }
+
+     // compare qty to largestBid
+     if(updatedPriceObject.qty > lobDepth.largestBid){
+      lobDepth.largestBid = updatedPriceObject.qty;
+    }
+    
 
     lobDepth.bids[targetPrice] = updatedPriceObject;
   } else if (type == "ask") {
@@ -133,6 +148,11 @@ function commitItemWithClientTick(item, type, lobDepth) {
     if (!updatedPriceObject) {
       delete lobDepth.asks[targetPrice];
       return;
+    }
+
+    // compare qty to largestAsk
+    if(updatedPriceObject.qty > lobDepth.largestAsk){
+      lobDepth.largestAsk = updatedPriceObject.qty;
     }
 
     lobDepth.asks[targetPrice] = updatedPriceObject;

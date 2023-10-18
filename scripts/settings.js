@@ -40,13 +40,20 @@ export const canvasTabs = document.getElementById("canvasTabs");
 // fonts
 export const tabTextFont = "0.7rem 'Roboto-Mono', monospace";
 
-// colours
+// grid colours
 export const gridColourObject = {
   default: "#ffffff",
   a: "#4C4E52",
   b: "#6F7378",
+  bestBid: "#155e15",
+  bestAsk: "#940e0c"
 };
-export const highlightXColourObject = { 2: "#00ff00", 6: "#ff0000" };
+
+//highlight X colour object, key, refers to tab number
+export const highlightXColourObject = { 
+  2: "#00ff00", //bid 
+  6: "#ff0000"  //ask
+};
 export const highlightYColourObject = "#d3d3d3";
 export const dataTextColour = "#f0f0f0";
 export const tabTextColour = "#ffffff";

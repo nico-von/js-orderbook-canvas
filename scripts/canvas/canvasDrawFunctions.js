@@ -6,9 +6,12 @@ import {
   getAsk,
   getDelta,
   getPriceLevel,
+  getBestBid,
+  getBestAsk,
+  getRelativeLargestBid,
 } from "../data/data.js";
 
-export function gridDraw(i, nextY) {
+export function gridDraw(i, nextY, start, end) {
   const {
     gridColourObject,
     highlightYColourObject,
@@ -74,13 +77,24 @@ export function gridDraw(i, nextY) {
   }
 }
 
-export function dataDraw(i, nextY) {
-  const { dataTextColour, data, otherColsDecimalLength } = this.addSettings;
+export function dataDraw(i, nextY, start, end) {
+  const { dataTextColour, data, otherColsDecimalLength, gridColourObject } =
+    this.addSettings;
   // sample data rendering
   this.ctx.fillStyle = dataTextColour;
+  // price data
+  const currPrice = getPriceLevel(i, data);
+  const bestBid = getBestBid(data);
+  const bestAsk = getBestAsk(data);
+  const atBestBid = i == bestBid;
+  const atBestAsk = i == bestAsk;
+  const largestBid = getRelativeLargestBid(start, end, data);
 
   for (let j = 0; j < this.gridColumnCount; j++) {
+    let grid;
+    // grid text
     let dataText = "";
+    // this.ctx.strokeStyle = gridColourObject.default;
     switch (j) {
       case 0:
         let svpBuy = getBuy(i, data, otherColsDecimalLength, true);
@@ -94,16 +108,58 @@ export function dataDraw(i, nextY) {
         break;
       case 2:
         let bid = getBid(i, data, otherColsDecimalLength);
-        dataText = bid ? bid : "";
+        if (bid) {
+          // set text;
+          dataText = bid;
+          // set grid
+          let widthAdjustment = bid / largestBid;
+          grid = drawGridCell(
+            this.cellHeight,
+            this.cellWidths[j] * widthAdjustment,
+            j,
+            nextY,
+            this.xCoordinate[j]
+          );
+          this.ctx.fillStyle = gridColourObject.bestBid;
+          this.ctx.fill(grid[0]);
+          this.ctx.fillStyle = dataTextColour;
+        }
+
         break;
       case 3:
+        if (atBestBid) {
+          // set grid
+          grid = drawGridCell(
+            this.cellHeight,
+            this.cellWidths[j],
+            j,
+            nextY,
+            this.xCoordinate[j]
+          );
+          this.ctx.fillStyle = gridColourObject.bestBid;
+          this.ctx.fill(grid[0]);
+          this.ctx.fillStyle = dataTextColour;
+        }
         let sell = getSell(i, data, otherColsDecimalLength);
         dataText = sell ? sell : "";
         break;
       case 4:
-        dataText = getPriceLevel(i, data);
+        dataText = currPrice;
         break;
       case 5:
+        if (atBestAsk) {
+          // set grid
+          grid = drawGridCell(
+            this.cellHeight,
+            this.cellWidths[j],
+            j,
+            nextY,
+            this.xCoordinate[j]
+          );
+          this.ctx.fillStyle = gridColourObject.bestAsk;
+          this.ctx.fill(grid[0]);
+          this.ctx.fillStyle = dataTextColour;
+        }
         let buy = getBuy(i, data, otherColsDecimalLength, false);
         dataText = buy ? buy : "";
         break;
