@@ -9,15 +9,14 @@ canvas {
     background: #333;
 }
 
-#canvasLowerTabs {
-    z-index: 2;
-    border: none; /* temporary */
-}
-
-#canvasData {
+#canvasSelector {
     z-index: 4;
 }
 
-#canvasGrid {
+#canvasData {
     z-index: 3;
+}
+
+#canvasGrid {
+    z-index: 2;
 }

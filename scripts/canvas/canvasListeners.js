@@ -4,6 +4,7 @@ import {
   gridContainer,
   dataContainer,
   tabContainer,
+  selectorContainer,
 } from "./canvasContainers.js";
 import { adjustedCanvasTabBottom } from "../index.js";
 
@@ -12,11 +13,12 @@ export function wheelHandlerAllContainers(e) {
   const x = e.clientX - container.left;
   const y = e.clientY - container.top;
 
-  if (dataContainer.isOnCanvas(x, y)) {
+  if (selectorContainer.isOnCanvas(x, y)) {
     e.preventDefault();
     e.stopPropagation();
     gridContainer.handleScroll(e);
     dataContainer.handleScroll(e);
+    selectorContainer.handleScroll(e);
   }
 }
 
@@ -25,13 +27,16 @@ export function mouseMoveHandler(e) {
   const x = e.clientX - container.left;
   const y = e.clientY - container.top;
 
-  if (gridContainer.isOnCanvas(x, y)) {
+  if (selectorContainer.isOnCanvas(x, y)) {
     gridContainer.content.x = x;
     gridContainer.content.y = y;
-    dataContainer.content.y = y;
+    selectorContainer.content.x = x;
+    selectorContainer.content.y = y;
 
     // redraw containers
     drawOnContainer(gridContainer);
+    drawOnContainer(selectorContainer);
+
   } else if (tabContainer.isOnCanvas(x, y)) {
     if (!tabContainer.content.mouseDown) {
       // reset tab settings
@@ -48,6 +53,7 @@ export function mouseMoveHandler(e) {
     drawOnContainer(tabContainer);
     drawOnContainer(gridContainer);
     drawOnContainer(dataContainer);
+    drawOnContainer(selectorContainer);
   }
 }
 
@@ -64,6 +70,7 @@ export function mouseDownHandler(e) {
     drawOnContainer(tabContainer);
     drawOnContainer(gridContainer);
     drawOnContainer(dataContainer);
+    drawOnContainer(selectorContainer);
   }
 }
 
@@ -77,6 +84,7 @@ export function mouseUpHandler(e) {
     drawOnContainer(tabContainer);
     drawOnContainer(gridContainer);
     drawOnContainer(dataContainer);
+    drawOnContainer(selectorContainer);
   }
 }
 
@@ -96,7 +104,7 @@ export function mouseDblClickHandler(e) {
   const y = e.clientY - container.top;
 
   //clear trades
-  if (gridContainer.isOnCanvas(x, y)) {
+  if (selectorContainer.isOnCanvas(x, y)) {
     const client = data.marketTrades.client;
     Object.keys(client.buy).forEach((key) => {
       delete client.buy[key];
@@ -109,6 +117,7 @@ export function mouseDblClickHandler(e) {
 
 export function websocketDrawEventHandler(e) {
   // initial draw
+  drawOnContainer(selectorContainer, adjustedCanvasTabBottom);
   drawOnContainer(gridContainer, adjustedCanvasTabBottom);
   drawOnContainer(dataContainer, adjustedCanvasTabBottom);
   drawOnContainer(tabContainer, adjustedCanvasTabBottom);

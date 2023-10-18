@@ -36,6 +36,7 @@ export const gridStartCell = 0;
 export const canvasGrid = document.getElementById("canvasGrid");
 export const canvasData = document.getElementById("canvasData");
 export const canvasTabs = document.getElementById("canvasTabs");
+export const canvasSelector = document.getElementById("canvasSelector");
 
 // fonts
 export const tabTextFont = "0.7rem 'Roboto-Mono', monospace";
@@ -49,7 +50,6 @@ export const gridColourObject = {
   bestAsk: "#940e0c",
   bids: "#478047",
   asks: "#964848",
-  highlightAlpha: "4D",
 
 };
 
@@ -58,7 +58,7 @@ export const highlightXColourObject = {
   2: "#00ff00", //bid 
   6: "#ff0000"  //ask
 };
-export const highlightYColourObject = "#d3d3d3";
+export const highlightYColourObject = "#d3d3d3A1";
 export const dataTextColour = "#f0f0f0";
 export const tabTextColour = "#ffffff";
 export const tabLineColour = "#f0f0f0";

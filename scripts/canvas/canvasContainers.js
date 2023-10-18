@@ -31,6 +31,7 @@ import {
   canvasTabBottom,
   canvasTabTop,
   canvasTabs,
+  canvasSelector
 } from "../settings.js";
 
 // GRID
@@ -54,6 +55,35 @@ export const gridContent = new CanvasGridContent(
   undefined,
   gridStartCell, // startingCell
   cellHeight, // cell height
+  gridColumns,
+  undefined,
+  undefined,
+  {
+    gridColourObject,
+    highlightYColourObject,
+    highlightXColourObject,
+    defaultGridStrokeWidth,
+    highlightedGridStrokeWidth,
+    priceColumn,
+  }
+);
+
+export const selectorContainer = new CanvasContainer(
+  mainCanvasRight,
+  mainCanvasBottom,
+  mainCanvasTop,
+  mainCanvasLeft,
+  canvasSelector,
+  undefined
+)
+export const selectorContent = new CanvasGridContent(
+  mainCanvasRight,
+  mainCanvasBottom * 2,
+  -cellHeight,
+  mainCanvasLeft,
+  undefined,
+  gridStartCell,
+  cellHeight,
   gridColumns,
   undefined,
   undefined,

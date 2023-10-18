@@ -27,6 +27,40 @@ export function gridDraw(i, nextY, start, end) {
     this.ctx.fillStyle = gridColourObject.b;
   }
 
+  //render grid
+
+  for (let j = 0; j < this.gridColumnCount; j++) {
+    // create row grid
+    const grid = drawGridCell(
+      this.cellHeight,
+      this.cellWidths[j],
+      j,
+      nextY,
+      this.xCoordinate[j]
+    );
+    // > FILL
+    this.ctx.fill(grid[0]);
+
+    // stroke reset
+    this.ctx.strokeStyle = gridColourObject.default;
+    // reset lineWidth
+    this.ctx.lineWidth = defaultGridStrokeWidth;
+    // stroke grids
+    this.ctx.stroke(grid[0]);
+  }
+}
+
+export function selectorDraw(i, nextY, start, end) {
+  const {
+    gridColourObject,
+    highlightYColourObject,
+    highlightXColourObject,
+    defaultGridStrokeWidth,
+    highlightedGridStrokeWidth,
+    priceColumn,
+  } = this.addSettings;
+  //fill style
+
   let yPosition = 0;
   if (this.x && this.y) {
     // get relative Y pos
@@ -59,8 +93,8 @@ export function gridDraw(i, nextY, start, end) {
 
     if (withinY) {
       this.ctx.fillStyle = highlightYColourObject;
+      this.ctx.fill(grid[0]);
     }
-    this.ctx.fill(grid[0]);
 
     // > STROKE
     // except price grid
@@ -75,7 +109,7 @@ export function gridDraw(i, nextY, start, end) {
     // reset lineWidth
     this.ctx.lineWidth = defaultGridStrokeWidth;
     // stroke grids
-    this.ctx.stroke(grid[0]);
+    // this.ctx.stroke(grid[0]);
   }
 }
 
