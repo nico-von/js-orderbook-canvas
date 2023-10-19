@@ -60,11 +60,7 @@ export const gridContent = new CanvasGridContent(
   undefined,
   {
     gridColourObject,
-    highlightYColourObject,
-    highlightXColourObject,
     defaultGridStrokeWidth,
-    highlightedGridStrokeWidth,
-    priceColumn,
   }
 );
 

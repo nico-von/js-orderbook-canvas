@@ -145,6 +145,14 @@ export function getLargestBid(dataObject) {
   return dataObject.depth.largestBid;
 }
 
+export function getLargestAsk(dataObject) {
+  if (!(dataObject && dataObject.depth.largestAsk)){
+    return;
+  }
+
+  return dataObject.depth.largestAsk;
+}
+
 export function getRelativeLargestBid(start, end, dataObject){
   if (!(dataObject && dataObject.depth)) {
     return;
@@ -159,6 +167,22 @@ export function getRelativeLargestBid(start, end, dataObject){
   }
   return largest;
 }
+
+export function getRelativeLargestAsk(start, end, dataObject){
+  if (!(dataObject && dataObject.depth)) {
+    return;
+  }
+  let largest = 0;
+  for (let i = start; i < end; i++){
+    const priceLevel = getPriceLevel(i, dataObject);
+    const ask = dataObject.depth.asks[priceLevel];
+    if (ask) {
+      largest = ask.qty > largest ? ask.qty : largest; 
+    }
+  }
+  return largest;
+}
+
 export function getBid(i, dataObject, decimalLength) {
   if (!(dataObject && dataObject.depth)) {
     return;

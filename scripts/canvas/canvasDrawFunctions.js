@@ -9,17 +9,11 @@ import {
   getBestBid,
   getBestAsk,
   getRelativeLargestBid,
+  getRelativeLargestAsk,
 } from "../data/data.js";
 
 export function gridDraw(i, nextY, start, end) {
-  const {
-    gridColourObject,
-    highlightYColourObject,
-    highlightXColourObject,
-    defaultGridStrokeWidth,
-    highlightedGridStrokeWidth,
-    priceColumn,
-  } = this.addSettings;
+  const { gridColourObject, defaultGridStrokeWidth } = this.addSettings;
   //fill style
   if (Math.round(i) % 2 == 0) {
     this.ctx.fillStyle = gridColourObject.a;
@@ -72,9 +66,9 @@ export function selectorDraw(i, nextY, start, end) {
       this.cellHeight
     );
   }
+  const withinY = yPosition == Math.round(i);
 
   //render grid
-
   for (let j = 0; j < this.gridColumnCount; j++) {
     // create row grid
     const grid = drawGridCell(
@@ -86,7 +80,6 @@ export function selectorDraw(i, nextY, start, end) {
     );
     // > FILL
 
-    const withinY = yPosition == Math.round(i);
     const withinX =
       this.x >= this.xCoordinate[j] &&
       this.x <= this.xCoordinate[j] + this.cellWidths[j];
@@ -109,7 +102,6 @@ export function selectorDraw(i, nextY, start, end) {
     // reset lineWidth
     this.ctx.lineWidth = defaultGridStrokeWidth;
     // stroke grids
-    // this.ctx.stroke(grid[0]);
   }
 }
 
@@ -122,10 +114,14 @@ export function dataDraw(i, nextY, start, end) {
   const currPrice = getPriceLevel(i, data);
   const bestBid = getBestBid(data);
   const bestAsk = getBestAsk(data);
-  const atBestBid = i == bestBid;
-  const atBestAsk = i == bestAsk;
+  const atBestBid = Math.round(i) == bestBid;
+  const atBestAsk = Math.round(i) == bestAsk;
+  if (atBestAsk){
+    console.log(i, Math.round(i), bestAsk, )
+  }
+  
   const largestBid = getRelativeLargestBid(start, end, data);
-
+  const largestAsk = getRelativeLargestAsk(start, end, data);
   for (let j = 0; j < this.gridColumnCount; j++) {
     let grid;
     // grid text
@@ -148,7 +144,7 @@ export function dataDraw(i, nextY, start, end) {
           // set text;
           dataText = bid;
           // set grid
-          let widthAdjustment = bid / largestBid;
+          const widthAdjustment = bid / largestBid;
           grid = drawGridCell(
             this.cellHeight,
             this.cellWidths[j] * widthAdjustment,
@@ -201,7 +197,22 @@ export function dataDraw(i, nextY, start, end) {
         break;
       case 6:
         let ask = getAsk(i, data, otherColsDecimalLength, false);
-        dataText = ask ? ask : "";
+        if (ask) {
+          // set text;
+          dataText = ask;
+          // set grid
+          const widthAdjustment = ask / largestAsk;
+          grid = drawGridCell(
+            this.cellHeight,
+            this.cellWidths[j] * widthAdjustment,
+            j,
+            nextY,
+            this.xCoordinate[j]
+          );
+          this.ctx.fillStyle = gridColourObject.asks;
+          this.ctx.fill(grid[0]);
+          this.ctx.fillStyle = dataTextColour;
+        }
         break;
       case 7:
         let delta = getDelta(i, data, otherColsDecimalLength);

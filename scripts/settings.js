@@ -46,11 +46,10 @@ export const gridColourObject = {
   default: "#ffffff",
   a: "#4C4E52F0",
   b: "#6F7378F0",
-  bestBid: "#155e15",
-  bestAsk: "#940e0c",
+  bestBid: "#940e0c",
+  bestAsk: "#155e15",
   bids: "#478047",
   asks: "#964848",
-
 };
 
 //highlight X colour object, key, refers to tab number
