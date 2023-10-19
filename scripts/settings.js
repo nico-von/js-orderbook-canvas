@@ -50,6 +50,8 @@ export const gridColourObject = {
   bestAsk: "#155e15",
   bids: "#478047",
   asks: "#964848",
+  buys: "#155e15",
+  sells: "#940e0c"
 };
 
 //highlight X colour object, key, refers to tab number

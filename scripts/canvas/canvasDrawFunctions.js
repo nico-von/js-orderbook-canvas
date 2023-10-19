@@ -8,8 +8,8 @@ import {
   getPriceLevel,
   getBestBid,
   getBestAsk,
-  getRelativeLargestBid,
-  getRelativeLargestAsk,
+  getRelativeLargestDepth,
+  getRelativeLargestVp
 } from "../data/data.js";
 
 export function gridDraw(i, nextY, start, end) {
@@ -116,22 +116,62 @@ export function dataDraw(i, nextY, start, end) {
   const bestAsk = getBestAsk(data);
   const atBestBid = Math.round(i) == bestBid;
   const atBestAsk = Math.round(i) == bestAsk;
-  if (atBestAsk){
-    console.log(i, Math.round(i), bestAsk, )
-  }
-  
-  const largestBid = getRelativeLargestBid(start, end, data);
-  const largestAsk = getRelativeLargestAsk(start, end, data);
+  const largestBid = getRelativeLargestDepth(start, end, data, true);
+  const largestAsk = getRelativeLargestDepth(start, end, data, false);
+  const largestSvpBuy = getRelativeLargestVp(start, end, data, true, true);
+  const largestSvpSell = getRelativeLargestVp(start, end, data, true, false);
+  const svpLarger = Math.max(largestSvpBuy, largestSvpSell);
+
   for (let j = 0; j < this.gridColumnCount; j++) {
-    let grid;
     // grid text
     let dataText = "";
     // this.ctx.strokeStyle = gridColourObject.default;
     switch (j) {
       case 0:
-        let svpBuy = getBuy(i, data, otherColsDecimalLength, true);
-        let svpSell = getSell(i, data, otherColsDecimalLength, true);
-        dataText = `${svpBuy ? svpBuy : 0}, ${svpSell ? svpSell : 0}`;
+        const svpBuy = getBuy(i, data, otherColsDecimalLength, true);
+        const svpSell = getSell(i, data, otherColsDecimalLength, true);
+
+        const svpBuyHigher = +svpBuy >= +svpSell;
+        dataText = `${svpBuy}, ${svpSell}, ${svpBuyHigher}`;
+
+        const svpBuyWidthAdj = svpBuy / svpLarger;
+        const svpSellWidthAdj = svpSell / svpLarger;
+
+        const svpLower = svpBuyHigher ? svpSellWidthAdj : svpBuyWidthAdj;
+        const svpLowerWidth = this.cellWidths[j] * (svpLower); 
+
+        const svpHigher = svpBuyHigher ? svpBuyWidthAdj : svpSellWidthAdj;
+        const svpHigherWidth = (this.cellWidths[j] * (svpHigher)) - svpLowerWidth;
+        
+        const gridfillStyle = svpBuyHigher ? gridColourObject.sells: gridColourObject.buys;
+        
+        const gridOuterFillStyle = svpBuyHigher ? gridColourObject.buys: gridColourObject.sells;
+
+        // set grid
+        const gridInner = drawGridCell(
+          this.cellHeight,
+          svpLowerWidth,
+          j,
+          nextY,
+          this.xCoordinate[j]
+        );
+        this.ctx.fillStyle = gridfillStyle;
+        this.ctx.fill(gridInner[0]);
+
+        // set grid b
+        const gridOuter = drawGridCell(
+          this.cellHeight,
+          svpHigherWidth,
+          j,
+          nextY,
+          this.xCoordinate[j] + svpLowerWidth
+        )
+
+        // console.log(this.cellWidths[j], this.xCoordinate[j] + svpLowerWidth, this.cellWidths[j] * svpRemaining)
+        this.ctx.fillStyle = gridOuterFillStyle;
+        this.ctx.fill(gridOuter[0]);
+        this.ctx.fillStyle = dataTextColour;
+        
         break;
       case 1:
         let cvpBuy = getBuy(i, data, otherColsDecimalLength, false);
@@ -145,7 +185,7 @@ export function dataDraw(i, nextY, start, end) {
           dataText = bid;
           // set grid
           const widthAdjustment = bid / largestBid;
-          grid = drawGridCell(
+          const grid = drawGridCell(
             this.cellHeight,
             this.cellWidths[j] * widthAdjustment,
             j,
@@ -161,7 +201,7 @@ export function dataDraw(i, nextY, start, end) {
       case 3:
         if (atBestBid) {
           // set grid
-          grid = drawGridCell(
+          const grid = drawGridCell(
             this.cellHeight,
             this.cellWidths[j],
             j,
@@ -181,7 +221,7 @@ export function dataDraw(i, nextY, start, end) {
       case 5:
         if (atBestAsk) {
           // set grid
-          grid = drawGridCell(
+          const grid = drawGridCell(
             this.cellHeight,
             this.cellWidths[j],
             j,
@@ -202,7 +242,7 @@ export function dataDraw(i, nextY, start, end) {
           dataText = ask;
           // set grid
           const widthAdjustment = ask / largestAsk;
-          grid = drawGridCell(
+          const grid = drawGridCell(
             this.cellHeight,
             this.cellWidths[j] * widthAdjustment,
             j,

@@ -152,37 +152,40 @@ export function getLargestAsk(dataObject) {
 
   return dataObject.depth.largestAsk;
 }
-
-export function getRelativeLargestBid(start, end, dataObject){
-  if (!(dataObject && dataObject.depth)) {
-    return;
+function getRelLargestQty(start, end, dataObject, mainObject) {
+  if(!dataObject && mainObject) {
+    return
   }
   let largest = 0;
   for (let i = start; i < end; i++){
-    const priceLevel = getPriceLevel(i, dataObject);
-    const bid = dataObject.depth.bids[priceLevel];
-    if (bid) {
-      largest = bid.qty > largest ? bid.qty : largest; 
+    const priceLevel = getPriceLevel(i, mainObject);
+    const d = dataObject[priceLevel];
+    if (d) {
+      largest = d.qty > largest ? d.qty : largest; 
     }
   }
   return largest;
 }
 
-export function getRelativeLargestAsk(start, end, dataObject){
+export function getRelativeLargestDepth(start, end, dataObject, isBid){
   if (!(dataObject && dataObject.depth)) {
     return;
   }
-  let largest = 0;
-  for (let i = start; i < end; i++){
-    const priceLevel = getPriceLevel(i, dataObject);
-    const ask = dataObject.depth.asks[priceLevel];
-    if (ask) {
-      largest = ask.qty > largest ? ask.qty : largest; 
-    }
-  }
-  return largest;
+  
+  const data = isBid ? dataObject.depth.bids : dataObject.depth.asks;
+  return getRelLargestQty(start, end, data, dataObject);
 }
 
+
+export function getRelativeLargestVp(start, end, dataObject, isSession, isBuy) {
+  if (!(dataObject && dataObject.marketTrades)){
+    return;
+  }
+  const session = isSession ? dataObject.marketTrades.session : dataObject.marketTrades.client;
+  const data = isBuy ?  session.buy : session.sell;
+  
+  return getRelLargestQty(start, end, data, dataObject);  
+}
 export function getBid(i, dataObject, decimalLength) {
   if (!(dataObject && dataObject.depth)) {
     return;
@@ -230,6 +233,8 @@ export function getBuy(i, dataObject, decimalLength, isSession) {
 
   if (buy) {
     return buy.qty.toFixed(decimalLength);
+  } else {
+    return 0;
   }
 }
 
@@ -249,6 +254,8 @@ export function getSell(i, dataObject, decimalLength, isSession) {
 
   if (sell) {
     return sell.qty.toFixed(decimalLength);
+  } else {
+    return 0;
   }
 }
 
