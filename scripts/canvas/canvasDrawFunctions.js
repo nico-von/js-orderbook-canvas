@@ -11,6 +11,7 @@ import {
   getRelativeLargestDepth,
   getRelativeLargestVp
 } from "../data/data.js";
+import { textOffsetX, textOffsetY } from "../settings.js";
 
 export function gridDraw(i, nextY, start, end) {
   const { gridColourObject, defaultGridStrokeWidth } = this.addSettings;
@@ -121,7 +122,8 @@ export function dataDraw(i, nextY, start, end) {
   const largestSvpBuy = getRelativeLargestVp(start, end, data, true, true);
   const largestSvpSell = getRelativeLargestVp(start, end, data, true, false);
   const svpLarger = Math.max(largestSvpBuy, largestSvpSell);
-
+  const largestCvpBuy = getRelativeLargestVp(start, end, data, false, true);
+  const largestCvpSell = getRelativeLargestVp(start, end, data, false, false);
   for (let j = 0; j < this.gridColumnCount; j++) {
     // grid text
     let dataText = "";
@@ -132,7 +134,7 @@ export function dataDraw(i, nextY, start, end) {
         const svpSell = getSell(i, data, otherColsDecimalLength, true);
 
         const svpBuyHigher = +svpBuy >= +svpSell;
-        dataText = `${svpBuy}, ${svpSell}, ${svpBuyHigher}`;
+        // dataText = `${svpBuy}, ${svpSell}, ${svpBuyHigher}`;
 
         const svpBuyWidthAdj = svpBuy / svpLarger;
         const svpSellWidthAdj = svpSell / svpLarger;
@@ -177,6 +179,11 @@ export function dataDraw(i, nextY, start, end) {
         let cvpBuy = getBuy(i, data, otherColsDecimalLength, false);
         let cvpSell = getSell(i, data, otherColsDecimalLength, false);
         dataText = `${cvpBuy ? cvpBuy : 0}, ${cvpSell ? cvpSell : 0}`;
+        this.ctx.fillText(
+          dataText,
+          this.xCoordinate[j] + textOffsetX,
+          nextY * this.cellHeight + textOffsetY
+        );
         break;
       case 2:
         let bid = getBid(i, data, otherColsDecimalLength);
@@ -185,40 +192,88 @@ export function dataDraw(i, nextY, start, end) {
           dataText = bid;
           // set grid
           const widthAdjustment = bid / largestBid;
+          const gridWidth = this.cellWidths[j] * widthAdjustment;
+          const gridOffset = this.cellWidths[j] - gridWidth; 
           const grid = drawGridCell(
             this.cellHeight,
-            this.cellWidths[j] * widthAdjustment,
+            gridWidth,
             j,
             nextY,
-            this.xCoordinate[j]
+            this.xCoordinate[j] + gridOffset
           );
           this.ctx.fillStyle = gridColourObject.bids;
           this.ctx.fill(grid[0]);
           this.ctx.fillStyle = dataTextColour;
         }
-
+        this.ctx.fillText(
+          dataText,
+          this.xCoordinate[j] + this.cellWidths[j] - this.ctx.measureText(dataText).width - textOffsetX,
+          nextY * this.cellHeight + textOffsetY
+        );
         break;
       case 3:
+        let sell = getSell(i, data, otherColsDecimalLength);
+        dataText = sell ? sell : "";
+        if(sell){
+          const sellWidthAdj = sell / largestCvpSell;
+          const grid = drawGridCell(
+            this.cellHeight,
+            this.cellWidths[j] * sellWidthAdj,
+            j,
+            nextY,
+            this.xCoordinate[j]
+          );
+          this.ctx.fillStyle = gridColourObject.sells;
+          this.ctx.fill(grid[0]);
+          this.ctx.fillStyle = dataTextColour;
+          
+        }
         if (atBestBid) {
           // set grid
-          const grid = drawGridCell(
+          const bbGrid = drawGridCell(
             this.cellHeight,
             this.cellWidths[j],
             j,
             nextY,
             this.xCoordinate[j]
           );
-          this.ctx.fillStyle = gridColourObject.bestBid;
-          this.ctx.fill(grid[0]);
-          this.ctx.fillStyle = dataTextColour;
+          this.ctx.strokeStyle = gridColourObject.bestBid;
+          this.ctx.stroke(bbGrid[0]);
+          this.ctx.strokeStyle = dataTextColour;
         }
-        let sell = getSell(i, data, otherColsDecimalLength);
-        dataText = sell ? sell : "";
+        this.ctx.fillText(
+          dataText,
+          this.xCoordinate[j] + textOffsetX,
+          nextY * this.cellHeight + textOffsetY
+        );
         break;
       case 4:
         dataText = currPrice;
+        this.ctx.fillText(
+          dataText,
+          this.xCoordinate[j],
+          nextY * this.cellHeight + textOffsetY
+        );
         break;
       case 5:
+        let buy = getBuy(i, data, otherColsDecimalLength, false);
+        dataText = buy ? buy : "";
+        if(buy){
+          const buyWidthAdj = buy / largestCvpBuy;
+          const gridWidth = this.cellWidths[j] * buyWidthAdj;
+          const gridOffset = this.cellWidths[j] - gridWidth; 
+          const grid = drawGridCell(
+            this.cellHeight,
+            gridWidth,
+            j,
+            nextY,
+            this.xCoordinate[j] + gridOffset
+          );
+          this.ctx.fillStyle = gridColourObject.buys;
+          this.ctx.fill(grid[0]);
+          this.ctx.fillStyle = dataTextColour;
+          
+        }
         if (atBestAsk) {
           // set grid
           const grid = drawGridCell(
@@ -228,12 +283,15 @@ export function dataDraw(i, nextY, start, end) {
             nextY,
             this.xCoordinate[j]
           );
-          this.ctx.fillStyle = gridColourObject.bestAsk;
-          this.ctx.fill(grid[0]);
-          this.ctx.fillStyle = dataTextColour;
+          this.ctx.strokeStyle = gridColourObject.bestAsk;
+          this.ctx.stroke(grid[0]);
+          this.ctx.strokeStyle = dataTextColour;
         }
-        let buy = getBuy(i, data, otherColsDecimalLength, false);
-        dataText = buy ? buy : "";
+        this.ctx.fillText(
+          dataText,
+          this.xCoordinate[j] + this.cellWidths[j] - this.ctx.measureText(dataText).width - textOffsetX,
+          nextY * this.cellHeight + textOffsetY
+        );
         break;
       case 6:
         let ask = getAsk(i, data, otherColsDecimalLength, false);
@@ -253,20 +311,31 @@ export function dataDraw(i, nextY, start, end) {
           this.ctx.fill(grid[0]);
           this.ctx.fillStyle = dataTextColour;
         }
+        this.ctx.fillText(
+          dataText,
+          this.xCoordinate[j] + textOffsetX,
+          nextY * this.cellHeight + textOffsetY
+        );
         break;
       case 7:
         let delta = getDelta(i, data, otherColsDecimalLength);
         dataText = delta != 0 ? delta : "";
+        this.ctx.fillText(
+          dataText,
+          this.xCoordinate[j] + textOffsetX,
+          nextY * this.cellHeight + textOffsetY
+        );
         break;
       default:
         dataText = "";
+        this.ctx.fillText(
+          dataText,
+          this.xCoordinate[j] + textOffsetX,
+          nextY * this.cellHeight + textOffsetY
+        );
     }
 
-    this.ctx.fillText(
-      dataText,
-      this.xCoordinate[j],
-      nextY * this.cellHeight + 16
-    );
+    
   }
 }
 

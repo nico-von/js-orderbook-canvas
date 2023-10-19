@@ -46,8 +46,8 @@ export const gridColourObject = {
   default: "#ffffff",
   a: "#4C4E52F0",
   b: "#6F7378F0",
-  bestBid: "#940e0c",
-  bestAsk: "#155e15",
+  bestBid: "#ffffff",
+  bestAsk: "#ffffff",
   bids: "#478047",
   asks: "#964848",
   buys: "#155e15",
@@ -67,3 +67,6 @@ export const tabLineColour = "#f0f0f0";
 // lines
 export const highlightedGridStrokeWidth = 1;
 export const defaultGridStrokeWidth = 0.18;
+
+export const textOffsetX = 10;
+export const textOffsetY = 16;
