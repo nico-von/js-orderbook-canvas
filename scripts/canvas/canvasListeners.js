@@ -116,9 +116,5 @@ export function mouseDblClickHandler(e) {
 }
 
 export function websocketDrawEventHandler(e) {
-  // initial draw
-  drawOnContainer(selectorContainer, adjustedCanvasTabBottom);
-  drawOnContainer(gridContainer, adjustedCanvasTabBottom);
   drawOnContainer(dataContainer, adjustedCanvasTabBottom);
-  drawOnContainer(tabContainer, adjustedCanvasTabBottom);
 }

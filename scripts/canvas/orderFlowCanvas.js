@@ -1,13 +1,12 @@
 import { drawOnContainer } from "./canvasFunctions.js";
 
 class OrderFlowCanvas {
-  constructor(right, bottom, top, left, canvas, addSettings) {
+  constructor(right, bottom, top, left, canvas) {
     this.right = right; //also width
     this.bottom = bottom; //also height
     this.top = top;
     this.left = left;
     this.canvas = canvas;
-    this.addSettings = addSettings;
     this.ctx = this.canvas.getContext("2d");
     this.init();
   }
@@ -105,31 +104,15 @@ export class CanvasContainer extends OrderFlowCanvas {
   }
 }
 export class CanvasContent extends OrderFlowCanvas {
-  constructor(right, bottom, top, left, draw, addSettings) {
-    super(
-      right,
-      bottom,
-      top,
-      left,
-      document.createElement("canvas"),
-      addSettings
-    );
+  constructor(right, bottom, top, left, draw) {
+    super(right, bottom, top, left, document.createElement("canvas"));
     this.draw = draw;
   }
 }
 
 export class CanvasTabContent extends CanvasContent {
-  constructor(
-    right,
-    bottom,
-    top,
-    left,
-    draw,
-    gridColumnCount,
-    children,
-    addSettings
-  ) {
-    super(right, bottom, top, left, draw, addSettings);
+  constructor(right, bottom, top, left, draw, gridColumnCount, children) {
+    super(right, bottom, top, left, draw);
     this.gridColumnCount = gridColumnCount;
     this.children = children;
   }
@@ -146,10 +129,9 @@ export class CanvasGridContent extends CanvasContent {
     cellHeight,
     gridColumnCount,
     gridColumns,
-    gridCellWidths,
-    addSettings
+    gridCellWidths
   ) {
-    super(right, bottom, top, left, draw, addSettings);
+    super(right, bottom, top, left, draw);
     this.startCell = startingCell; // starting cell index to rendering
     this.cellHeight = cellHeight; // cell Height
     this.gridColumnCount = gridColumnCount; // grid column count

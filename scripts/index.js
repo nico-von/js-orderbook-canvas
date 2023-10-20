@@ -20,6 +20,7 @@ import {
   wheelHandlerAllContainers,
   websocketDrawEventHandler,
 } from "./canvas/canvasListeners.js";
+import { drawOnContainer } from "./canvas/canvasFunctions.js";
 import { ticker, tickSize, priceColDecimalLength, data } from "./settings.js";
 
 export let adjustedCanvasTabBottom;
@@ -63,6 +64,12 @@ window.onload = function () {
   selectorContainer.canvas.addEventListener("dblclick", mouseDblClickHandler);
   window.addEventListener("mouseup", mouseUpHandler);
 
-  // initial draw - only on first depth populate
+  // depth populate
   document.addEventListener("draw", websocketDrawEventHandler);
+
+  //initial draw
+  drawOnContainer(selectorContainer, adjustedCanvasTabBottom);
+  drawOnContainer(gridContainer, adjustedCanvasTabBottom);
+  drawOnContainer(tabContainer, adjustedCanvasTabBottom);
+
 };

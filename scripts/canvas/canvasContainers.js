@@ -5,20 +5,6 @@ import {
 } from "./orderFlowCanvas.js";
 
 import {
-  gridColourObject,
-  highlightYColourObject,
-  highlightXColourObject,
-  defaultGridStrokeWidth,
-  highlightedGridStrokeWidth,
-  priceColumn,
-  otherColsDecimalLength,
-  data,
-  dataTextColour,
-  tabLineColour,
-  tabTextColour,
-  tabTextFont,
-  tabs,
-  canvasTabOffset,
   mainCanvasRight,
   mainCanvasBottom,
   mainCanvasTop,
@@ -58,10 +44,6 @@ export const gridContent = new CanvasGridContent(
   gridColumns,
   undefined,
   undefined,
-  {
-    gridColourObject,
-    defaultGridStrokeWidth,
-  }
 );
 
 export const selectorContainer = new CanvasContainer(
@@ -83,14 +65,6 @@ export const selectorContent = new CanvasGridContent(
   gridColumns,
   undefined,
   undefined,
-  {
-    gridColourObject,
-    highlightYColourObject,
-    highlightXColourObject,
-    defaultGridStrokeWidth,
-    highlightedGridStrokeWidth,
-    priceColumn,
-  }
 );
 
 // DATA
@@ -114,7 +88,6 @@ export const dataContent = new CanvasGridContent(
   gridColumns,
   undefined,
   undefined,
-  { dataTextColour, data, otherColsDecimalLength, gridColourObject }
 );
 // TAB
 
@@ -134,6 +107,5 @@ export const tabContent = new CanvasTabContent(
   mainCanvasLeft,
   undefined,
   gridColumns,
-  undefined,
-  { tabLineColour, tabTextColour, tabTextFont, tabs, canvasTabOffset }
+  undefined
 );
