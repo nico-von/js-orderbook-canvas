@@ -3,34 +3,67 @@ import {
   sumAllValues,
 } from "../misc/numberManipulationFunctions.js";
 
-export function commitToDepth(snapshot, lobDepth) {
+let bidBuffer = [];
+let askBuffer = [];
+
+async function processItem(type, arr, lobDepth, eventToDispatch) {
+  //base case
+  if (arr.length === 0) {
+    return;
+  }
+
+  const item = arr.shift();
+  if (!lobDepth.customTickSize) {
+    await commitItemWithoutClientTick(item, type, lobDepth, eventToDispatch);
+  } else {
+    await commitItemWithClientTick(item, type, lobDepth, eventToDispatch);
+  }
+  await processItem(type, arr, lobDepth);
+}
+
+export async function commitToDepth(snapshot, lobDepth, eventToDispatch) {
   // populate accordingly
   let bids = snapshot.e ? snapshot.b : snapshot.bids;
   let asks = snapshot.e ? snapshot.a : snapshot.asks;
 
-  function iter(arr, type) {
-    for (let item of arr) {
-      // we need to save these according to
-      // client tick sizes
-      if (!lobDepth.customTickSize) {
-        commitItemWithoutClientTick(item, type, lobDepth);
-      } else {
-        commitItemWithClientTick(item, type, lobDepth);
-      }
-    }
+  // function iter(arr, type) {
+  //   for (let item of arr) {
+  //     // we need to save these according to
+  //     // client tick sizes
+  //     if (!lobDepth.customTickSize) {
+  //       commitItemWithoutClientTick(item, type, lobDepth);
+  //     } else {
+  //       commitItemWithClientTick(item, type, lobDepth);
+  //     }
+  //   }
+  // }
+  bidBuffer.push(...bids);
+  askBuffer.push(...asks);
+
+  // iter(bids, "bid");
+  // iter(asks, "ask");
+  if (bidBuffer.length === bids.length) {
+    await processItem("bid", bidBuffer, lobDepth, eventToDispatch);
   }
-  iter(bids, "bid");
-  iter(asks, "ask");
+
+  if (askBuffer.length === asks.length) {
+    await processItem("ask", askBuffer, lobDepth, eventToDispatch);
+  }
 }
 
-function commitItemWithoutClientTick(item, type, lobDepth) {
+async function commitItemWithoutClientTick(
+  item,
+  type,
+  lobDepth,
+  eventToDispatch
+) {
   let { decimalLength } = lobDepth;
   let price = parseFloat(item[0]).toFixed(decimalLength);
   let qty = parseFloat(item[1]);
 
   if (type == "bid") {
     // compare qty to largestBid
-    if(qty > lobDepth.largestBid){
+    if (qty > lobDepth.largestBid) {
       lobDepth.largestBid = qty;
     }
 
@@ -45,7 +78,7 @@ function commitItemWithoutClientTick(item, type, lobDepth) {
       priceFloat: parseFloat(price),
     };
   } else if (type == "ask") {
-    if(qty > lobDepth.largestAsk){
+    if (qty > lobDepth.largestAsk) {
       lobDepth.largestAsk = qty;
     }
 
@@ -59,6 +92,10 @@ function commitItemWithoutClientTick(item, type, lobDepth) {
       qty,
       priceFloat: parseFloat(price),
     };
+  }
+
+  if (eventToDispatch) {
+    document.dispatchEvent(eventToDispatch);
   }
 }
 
@@ -96,7 +133,7 @@ function processTargetPrice(targetPriceObject, originalPrice, qty, isDepth) {
   }
 }
 
-function commitItemWithClientTick(item, type, lobDepth) {
+async function commitItemWithClientTick(item, type, lobDepth, eventToDispatch) {
   // parseFloat price here to be able to
   // calculate its nearest tick
   let price = parseFloat(item[0]);
@@ -122,17 +159,16 @@ function commitItemWithClientTick(item, type, lobDepth) {
       qty,
       true
     );
-    
+
     if (!updatedPriceObject) {
       delete lobDepth.bids[targetPrice];
       return;
     }
 
-     // compare qty to largestBid
-     if(updatedPriceObject.qty > lobDepth.largestBid){
+    // compare qty to largestBid
+    if (updatedPriceObject.qty > lobDepth.largestBid) {
       lobDepth.largestBid = updatedPriceObject.qty;
     }
-    
 
     lobDepth.bids[targetPrice] = updatedPriceObject;
   } else if (type == "ask") {
@@ -151,18 +187,23 @@ function commitItemWithClientTick(item, type, lobDepth) {
     }
 
     // compare qty to largestAsk
-    if(updatedPriceObject.qty > lobDepth.largestAsk){
+    if (updatedPriceObject.qty > lobDepth.largestAsk) {
       lobDepth.largestAsk = updatedPriceObject.qty;
     }
 
     lobDepth.asks[targetPrice] = updatedPriceObject;
   }
+
+  if (eventToDispatch) {
+    document.dispatchEvent(eventToDispatch);
+  }
 }
 
-function commitLastItemWithoutClientTick(
+async function commitLastItemWithoutClientTick(
   lastTrade,
   marketTrades,
-  decimalLength
+  decimalLength,
+  eventToDispatch
 ) {
   const { price, type, qty } = lastTrade;
 
@@ -185,13 +226,18 @@ function commitLastItemWithoutClientTick(
       qty: quantity,
     };
   }
+
+  if (eventToDispatch) {
+    document.dispatchEvent(eventToDispatch);
+  }
 }
 
-function commitLastItemWithClientTick(
+async function commitLastItemWithClientTick(
   lastTrade,
   marketTrades,
   tickSize,
-  decimalLength
+  decimalLength,
+  eventToDispatch
 ) {
   const { price, type, qty } = lastTrade;
   const targetPrice = roundToNearestTick(price, tickSize).toFixed(
@@ -230,17 +276,33 @@ function commitLastItemWithClientTick(
       marketTrades.buy[targetPrice] = updatedPriceObject;
     }
   }
+
+  if (eventToDispatch) {
+    document.dispatchEvent(eventToDispatch);
+  }
 }
-export function commitToMarketTrade(
+export async function commitToMarketTrade(
   data,
   marketTrades,
   customTickSize,
   tickSize,
-  decimalLength
+  decimalLength,
+  eventToDispatch
 ) {
   if (!customTickSize) {
-    commitLastItemWithoutClientTick(data, marketTrades, decimalLength);
+    await commitLastItemWithoutClientTick(
+      data,
+      marketTrades,
+      decimalLength,
+      eventToDispatch
+    );
   } else {
-    commitLastItemWithClientTick(data, marketTrades, tickSize, decimalLength);
+    await commitLastItemWithClientTick(
+      data,
+      marketTrades,
+      tickSize,
+      decimalLength,
+      eventToDispatch
+    );
   }
 }

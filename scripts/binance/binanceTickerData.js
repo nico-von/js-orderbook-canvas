@@ -26,6 +26,6 @@ export async function manageTicker(dataTicker) {
     ticker: dataTicker,
     tickSize: tickSize,
     lotStep: stepSize,
-    lastPrice: price
+    lastPrice: price,
   };
 }

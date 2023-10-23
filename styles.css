@@ -1,22 +1,26 @@
 canvas {
-    position: absolute;
-    border: 1px solid black;
-    background: transparent;
+  position: absolute;
+  border: 1px solid black;
+  background: transparent;
 }
 
 #canvasTabs {
-    z-index: 1;
-    background: #333;
+  z-index: 1;
+  background: #333;
 }
 
 #canvasSelector {
-    z-index: 4;
+  z-index: 5;
 }
 
 #canvasData {
-    z-index: 3;
+  z-index: 4;
 }
 
 #canvasGrid {
-    z-index: 2;
+  z-index: 2;
+}
+
+#canvasVis {
+  z-index: 3;
 }

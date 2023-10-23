@@ -7,9 +7,17 @@ import {
   tabContainer,
   tabContent,
   selectorContainer,
-  selectorContent
+  selectorContent,
+  visContainer,
+  visContent,
 } from "./canvas/canvasContainers.js";
-import { gridDraw, selectorDraw, dataDraw, tabDraw } from "./canvas/canvasDrawFunctions.js";
+import {
+  gridDraw,
+  selectorDraw,
+  dataDraw,
+  tabDraw,
+  visDraw,
+} from "./canvas/canvasDrawFunctions.js";
 import { smoothifyCanvases } from "./canvas/canvasFunctions.js";
 import {
   mouseMoveHandler,
@@ -28,10 +36,11 @@ export let adjustedCanvasTabBottom;
 //set draw functions
 gridContent.draw = gridDraw;
 dataContent.draw = dataDraw;
+visContent.draw = visDraw;
 tabContent.draw = tabDraw;
 selectorContent.draw = selectorDraw;
 //set children
-tabContent.children = [gridContent, dataContent, selectorContent];
+tabContent.children = [gridContent, dataContent, visContent, selectorContent];
 
 //start ticker
 initialiseTicker(ticker, tickSize, priceColDecimalLength, data);
@@ -41,6 +50,7 @@ window.onload = function () {
   // smoothen canvases
   smoothifyCanvases(gridContainer, gridContent);
   smoothifyCanvases(dataContainer, dataContent);
+  smoothifyCanvases(visContainer, dataContent);
   smoothifyCanvases(selectorContainer, selectorContent);
   adjustedCanvasTabBottom = smoothifyCanvases(tabContainer, tabContent).height;
 
@@ -49,15 +59,21 @@ window.onload = function () {
   dataContainer.content = dataContent;
   selectorContainer.content = selectorContent;
   tabContainer.content = tabContent;
-  
+  visContainer.content = visContent;
+
   gridContainer.initContent();
   dataContainer.initContent();
   selectorContainer.initContent();
   tabContainer.initContent();
+  visContainer.initContent();
 
-  selectorContainer.canvas.addEventListener("wheel", wheelHandlerAllContainers, {
-    passive: false,
-  });
+  selectorContainer.canvas.addEventListener(
+    "wheel",
+    wheelHandlerAllContainers,
+    {
+      passive: false,
+    }
+  );
   selectorContainer.canvas.addEventListener("mousemove", mouseMoveHandler);
   selectorContainer.canvas.addEventListener("mousedown", mouseDownHandler);
   selectorContainer.canvas.addEventListener("click", mouseClickHandler);
@@ -71,5 +87,4 @@ window.onload = function () {
   drawOnContainer(selectorContainer, adjustedCanvasTabBottom);
   drawOnContainer(gridContainer, adjustedCanvasTabBottom);
   drawOnContainer(tabContainer, adjustedCanvasTabBottom);
-
 };

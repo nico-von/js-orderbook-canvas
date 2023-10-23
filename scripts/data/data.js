@@ -138,7 +138,7 @@ export function getBestAsk(dataObject) {
 }
 
 export function getLargestBid(dataObject) {
-  if (!(dataObject && dataObject.depth.largestBid)){
+  if (!(dataObject && dataObject.depth.largestBid)) {
     return;
   }
 
@@ -146,45 +146,46 @@ export function getLargestBid(dataObject) {
 }
 
 export function getLargestAsk(dataObject) {
-  if (!(dataObject && dataObject.depth.largestAsk)){
+  if (!(dataObject && dataObject.depth.largestAsk)) {
     return;
   }
 
   return dataObject.depth.largestAsk;
 }
 function getRelLargestQty(start, end, dataObject, mainObject) {
-  if(!dataObject && mainObject) {
-    return
+  if (!dataObject && mainObject) {
+    return;
   }
   let largest = 0;
-  for (let i = start; i < end; i++){
+  for (let i = start; i < end; i++) {
     const priceLevel = getPriceLevel(i, mainObject);
     const d = dataObject[priceLevel];
     if (d) {
-      largest = d.qty > largest ? d.qty : largest; 
+      largest = d.qty > largest ? d.qty : largest;
     }
   }
   return largest;
 }
 
-export function getRelativeLargestDepth(start, end, dataObject, isBid){
+export function getRelativeLargestDepth(start, end, dataObject, isBid) {
   if (!(dataObject && dataObject.depth)) {
     return;
   }
-  
+
   const data = isBid ? dataObject.depth.bids : dataObject.depth.asks;
   return getRelLargestQty(start, end, data, dataObject);
 }
 
-
 export function getRelativeLargestVp(start, end, dataObject, isSession, isBuy) {
-  if (!(dataObject && dataObject.marketTrades)){
+  if (!(dataObject && dataObject.marketTrades)) {
     return;
   }
-  const session = isSession ? dataObject.marketTrades.session : dataObject.marketTrades.client;
-  const data = isBuy ?  session.buy : session.sell;
-  
-  return getRelLargestQty(start, end, data, dataObject);  
+  const session = isSession
+    ? dataObject.marketTrades.session
+    : dataObject.marketTrades.client;
+  const data = isBuy ? session.buy : session.sell;
+
+  return getRelLargestQty(start, end, data, dataObject);
 }
 export function getBid(i, dataObject, decimalLength) {
   if (!(dataObject && dataObject.depth)) {

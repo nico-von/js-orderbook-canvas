@@ -44,7 +44,7 @@ function strokeGridCell(content, colour, grid, defaultColour) {
   content.ctx.strokeStyle = defaultColour;
 }
 
-export function printVP(content, i, vpLarger, isSession, j, nextY) {
+export function fillVP(content, i, vpLarger, isSession, j, nextY) {
   const vpBuy = getBuy(i, data, otherColsDecimalLength, isSession);
   const vpSell = getSell(i, data, otherColsDecimalLength, isSession);
 
@@ -89,61 +89,28 @@ export function printVP(content, i, vpLarger, isSession, j, nextY) {
   fillGridCell(content, gridOuterFillStyle, gridOuter[0], dataTextColour);
 }
 
-export function printBid(content, i, largestBid, j, nextY) {
-  let bid = getBid(i, data, otherColsDecimalLength);
+export function printBidAsk(content, i, j, nextY, isBid) {
+  let d = isBid
+    ? getBid(i, data, otherColsDecimalLength)
+    : getAsk(i, data, otherColsDecimalLength);
   let dataText = "";
-  if (bid) {
+  if (d) {
     // set text;
-    dataText = bid;
+    dataText = d;
     // set grid
-    const widthAdjustment = bid / largestBid;
-    const gridWidth = content.cellWidths[j] * widthAdjustment;
-    const gridOffset = content.cellWidths[j] - gridWidth;
-    const grid = drawGridCell(
-      content.cellHeight,
-      gridWidth,
-      j,
-      nextY,
-      content.xCoordinate[j] + gridOffset
-    );
-    fillGridCell(content, gridColourObject.bids, grid[0], dataTextColour);
   }
-  printText(content, dataText, j, nextY, "right");
+  printText(content, dataText, j, nextY, isBid ? "right" : "left");
 }
 
-export function printSell(content, i, largestCvpSell, j, nextY, atBestBid) {
-  let sell = getSell(i, data, otherColsDecimalLength);
+export function printBuySell(content, i, j, nextY, isBuy) {
+  let d = isBuy
+    ? getBuy(i, data, otherColsDecimalLength, false)
+    : getSell(i, data, otherColsDecimalLength, false);
   let dataText = "";
-  if (sell) {
-    //set text
-    dataText = sell;
-    const sellWidthAdj = sell / largestCvpSell;
-    const grid = drawGridCell(
-      content.cellHeight,
-      content.cellWidths[j] * sellWidthAdj,
-      j,
-      nextY,
-      content.xCoordinate[j]
-    );
-    fillGridCell(content, gridColourObject.sells, grid[0], dataTextColour);
+  if (d) {
+    dataText = d;
   }
-  if (atBestBid) {
-    // set grid
-    const bbGrid = drawGridCell(
-      content.cellHeight,
-      content.cellWidths[j],
-      j,
-      nextY,
-      content.xCoordinate[j]
-    );
-    strokeGridCell(
-      content,
-      gridColourObject.bestBid,
-      bbGrid[0],
-      dataTextColour
-    );
-  }
-  printText(content, dataText, j, nextY, "left");
+  printText(content, dataText, j, nextY, isBuy ? "right" : "left");
 }
 
 export function printPrice(content, currPrice, j, nextY) {
@@ -151,14 +118,21 @@ export function printPrice(content, currPrice, j, nextY) {
   printText(content, dataText, j, nextY, "left");
 }
 
-export function printBuy(content, i, largestCvpBuy, j, nextY, atBestAsk) {
-  let buy = getBuy(i, data, otherColsDecimalLength, false);
-  let dataText = "";
-  if (buy) {
-    dataText = buy;
-    const buyWidthAdj = buy / largestCvpBuy;
-    const gridWidth = content.cellWidths[j] * buyWidthAdj;
-    const gridOffset = content.cellWidths[j] - gridWidth;
+export function printDelta(content, i, j, nextY) {
+  let delta = getDelta(i, data, otherColsDecimalLength);
+  let dataText = delta != 0 ? delta : "";
+  printText(content, dataText, j, nextY, "left");
+}
+
+export function fillBidAsk(content, i, largestQty, j, nextY, isBid) {
+  let d = isBid
+    ? getBid(i, data, otherColsDecimalLength)
+    : getAsk(i, data, otherColsDecimalLength);
+  if (d) {
+    const widthAdjustment = +d / largestQty;
+    const gridWidth = content.cellWidths[j] * widthAdjustment;
+    const gridOffset = isBid ? content.cellWidths[j] - gridWidth : 0;
+    const gridColour = isBid ? gridColourObject.bids : gridColourObject.asks;
     const grid = drawGridCell(
       content.cellHeight,
       gridWidth,
@@ -166,10 +140,33 @@ export function printBuy(content, i, largestCvpBuy, j, nextY, atBestAsk) {
       nextY,
       content.xCoordinate[j] + gridOffset
     );
-    fillGridCell(content, gridColourObject.buys, grid[0], dataTextColour);
+    fillGridCell(content, gridColour, grid[0], dataTextColour);
   }
-  if (atBestAsk) {
+}
+
+export function fillBuySell(content, i, largestCVPQty, j, nextY, atBBO, isBuy) {
+  let d = isBuy
+    ? getBuy(i, data, otherColsDecimalLength, false)
+    : getSell(i, data, otherColsDecimalLength, false);
+  if (d) {
+    const widthAdj = +d / largestCVPQty;
+    const gridWidth = content.cellWidths[j] * widthAdj;
+    const gridOffset = isBuy ? content.cellWidths[j] - gridWidth : 0;
+    const gridColour = isBuy ? gridColourObject.buys : gridColourObject.sells;
+    const grid = drawGridCell(
+      content.cellHeight,
+      gridWidth,
+      j,
+      nextY,
+      content.xCoordinate[j] + gridOffset
+    );
+    fillGridCell(content, gridColour, grid[0], dataTextColour);
+  }
+  if (atBBO) {
     // set grid
+    const strokeColour = isBuy
+      ? gridColourObject.bestAsk
+      : gridColourObject.bestBid;
     const grid = drawGridCell(
       content.cellHeight,
       content.cellWidths[j],
@@ -177,34 +174,6 @@ export function printBuy(content, i, largestCvpBuy, j, nextY, atBestAsk) {
       nextY,
       content.xCoordinate[j]
     );
-    strokeGridCell(content, gridColourObject.bestAsk, grid[0], dataTextColour);
+    strokeGridCell(content, strokeColour, grid[0], dataTextColour);
   }
-  printText(content, dataText, j, nextY, "right");
-}
-
-export function printAsk(content, i, largestAsk, j, nextY) {
-  let ask = getAsk(i, data, otherColsDecimalLength, false);
-  let dataText = "";
-  if (ask) {
-    // set text;
-    dataText = ask;
-    // set grid
-    const widthAdjustment = ask / largestAsk;
-    const grid = drawGridCell(
-      content.cellHeight,
-      content.cellWidths[j] * widthAdjustment,
-      j,
-      nextY,
-      content.xCoordinate[j]
-    );
-    fillGridCell(content, gridColourObject.asks, grid[0], dataTextColour);
-  }
-
-  printText(content, dataText, j, nextY, "left");
-}
-
-export function printDelta(content, i, j, nextY) {
-  let delta = getDelta(i, data, otherColsDecimalLength);
-  let dataText = delta != 0 ? delta : "";
-  printText(content, dataText, j, nextY, "left");
 }

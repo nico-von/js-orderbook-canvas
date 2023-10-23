@@ -7,13 +7,13 @@ import {
   getRelativeLargestVp,
 } from "../data/data.js";
 import {
-  printVP,
-  printBid,
-  printSell,
+  fillVP,
+  printBidAsk,
   printPrice,
-  printBuy,
-  printAsk,
+  printBuySell,
   printDelta,
+  fillBidAsk,
+  fillBuySell,
 } from "./dataContentHelpers.js";
 import {
   gridColourObject,
@@ -114,17 +114,14 @@ export function selectorDraw(i, nextY, start, end) {
     // stroke grids
   }
 }
-
-export function dataDraw(i, nextY, start, end) {
+export function visDraw(i, nextY, start, end) {
   // default fill style
   this.ctx.fillStyle = dataTextColour;
-  // price data
-  const currPrice = getPriceLevel(i, data);
-  
+
   // BBO
   const bestBid = getBestBid(data);
   const bestAsk = getBestAsk(data);
-  
+
   const atBestBid = Math.round(i) == bestBid;
   const atBestAsk = Math.round(i) == bestAsk;
 
@@ -136,7 +133,7 @@ export function dataDraw(i, nextY, start, end) {
   const largestCvpBuy = getRelativeLargestVp(start, end, data, false, true);
   const largestCvpSell = getRelativeLargestVp(start, end, data, false, false);
 
-  // relative 
+  // relative
   const svpLarger = Math.max(largestSvpBuy, largestSvpSell);
   const cvpLarger = Math.max(largestCvpBuy, largestCvpSell);
   const depthLarger = Math.max(largestBid, largestAsk);
@@ -144,25 +141,59 @@ export function dataDraw(i, nextY, start, end) {
   for (let j = 0; j < this.gridColumnCount; j++) {
     switch (j) {
       case 0:
-        printVP(this, i, svpLarger, true, j, nextY);
+        fillVP(this, i, svpLarger, true, j, nextY);
         break;
       case 1:
-        printVP(this, i, cvpLarger, false, j, nextY);
+        fillVP(this, i, cvpLarger, false, j, nextY);
         break;
       case 2:
-        printBid(this, i, depthLarger, j, nextY);
+        fillBidAsk(this, i, depthLarger, j, nextY, true);
         break;
       case 3:
-        printSell(this, i, cvpLarger, j, nextY, atBestBid);
+        fillBuySell(this, i, cvpLarger, j, nextY, atBestBid);
+        break;
+      case 4:
+        break;
+      case 5:
+        fillBuySell(this, i, cvpLarger, j, nextY, atBestAsk, true);
+        break;
+      case 6:
+        fillBidAsk(this, i, depthLarger, j, nextY);
+        break;
+      case 7:
+        break;
+      default:
+        return;
+    }
+  }
+}
+
+export function dataDraw(i, nextY, start, end) {
+  // default fill style
+  this.ctx.fillStyle = dataTextColour;
+  // price data
+  const currPrice = getPriceLevel(i, data);
+
+  for (let j = 0; j < this.gridColumnCount; j++) {
+    switch (j) {
+      case 0:
+        break;
+      case 1:
+        break;
+      case 2:
+        printBidAsk(this, i, j, nextY, true);
+        break;
+      case 3:
+        printBuySell(this, i, j, nextY);
         break;
       case 4:
         printPrice(this, currPrice, j, nextY);
         break;
       case 5:
-        printBuy(this, i, cvpLarger, j, nextY, atBestAsk);
+        printBuySell(this, i, j, nextY, true);
         break;
       case 6:
-        printAsk(this, i, depthLarger, j, nextY);
+        printBidAsk(this, i, j, nextY);
         break;
       case 7:
         printDelta(this, i, j, nextY);

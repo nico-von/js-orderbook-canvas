@@ -4,7 +4,7 @@ import { commitToMarketTrade } from "./itemCommitAlgorithms.js";
 // Initialise last trade with blank object
 // lastTrade = {};
 
-export async function manageMarketTrades(data, marketTrades) {
+export async function manageMarketTrades(data, marketTrades, eventToDispatch) {
   const { customTickSize, tickSize, decimalLength } = marketTrades;
   const key = data.p;
   const price = parseFloat(data.p);
@@ -17,22 +17,24 @@ export async function manageMarketTrades(data, marketTrades) {
     qty,
   };
 
-  commitToMarketTrade(
+  await commitToMarketTrade(
     dataToCommit,
     marketTrades.client,
     customTickSize,
     tickSize,
-    decimalLength
+    decimalLength,
+    eventToDispatch
   );
   // have to commit it to SVP too, because marketTrades
   // is regularly cleared, and I think (for now) that
   // the best way of having the old data stick is to save it
   // to another object at the same time
-  commitToMarketTrade(
+  await commitToMarketTrade(
     dataToCommit,
     marketTrades.session,
     customTickSize,
     tickSize,
-    decimalLength
+    decimalLength,
+    eventToDispatch
   );
 }

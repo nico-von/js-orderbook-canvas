@@ -5,6 +5,7 @@ import {
   dataContainer,
   tabContainer,
   selectorContainer,
+  visContainer,
 } from "./canvasContainers.js";
 import { adjustedCanvasTabBottom } from "../index.js";
 
@@ -18,6 +19,7 @@ export function wheelHandlerAllContainers(e) {
     e.stopPropagation();
     gridContainer.handleScroll(e);
     dataContainer.handleScroll(e);
+    visContainer.handleScroll(e);
     selectorContainer.handleScroll(e);
   }
 }
@@ -36,7 +38,6 @@ export function mouseMoveHandler(e) {
     // redraw containers
     drawOnContainer(gridContainer);
     drawOnContainer(selectorContainer);
-
   } else if (tabContainer.isOnCanvas(x, y)) {
     if (!tabContainer.content.mouseDown) {
       // reset tab settings
@@ -53,6 +54,7 @@ export function mouseMoveHandler(e) {
     drawOnContainer(tabContainer);
     drawOnContainer(gridContainer);
     drawOnContainer(dataContainer);
+    drawOnContainer(visContainer);
     drawOnContainer(selectorContainer);
   }
 }
@@ -70,6 +72,7 @@ export function mouseDownHandler(e) {
     drawOnContainer(tabContainer);
     drawOnContainer(gridContainer);
     drawOnContainer(dataContainer);
+    drawOnContainer(visContainer);
     drawOnContainer(selectorContainer);
   }
 }
@@ -84,6 +87,7 @@ export function mouseUpHandler(e) {
     drawOnContainer(tabContainer);
     drawOnContainer(gridContainer);
     drawOnContainer(dataContainer);
+    drawOnContainer(visContainer);
     drawOnContainer(selectorContainer);
   }
 }
@@ -113,8 +117,11 @@ export function mouseDblClickHandler(e) {
       delete client.sell[key];
     });
   }
+  drawOnContainer(dataContainer);
+  drawOnContainer(visContainer);
 }
 
 export function websocketDrawEventHandler(e) {
   drawOnContainer(dataContainer, adjustedCanvasTabBottom);
+  drawOnContainer(visContainer, adjustedCanvasTabBottom);
 }

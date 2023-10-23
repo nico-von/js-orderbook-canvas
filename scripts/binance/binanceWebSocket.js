@@ -19,15 +19,21 @@ export function initialiseWebSocket(
     const { e } = data;
 
     if (e == "depthUpdate") {
-      await manageOrderBook(data, dataTicker, restQtyLimit, lobDepth);
+      await manageOrderBook(
+        data,
+        dataTicker,
+        restQtyLimit,
+        lobDepth,
+        eventToDispatch
+      );
     } else if (e == "aggTrade") {
-      await manageMarketTrades(data, marketTrades);
+      await manageMarketTrades(data, marketTrades, eventToDispatch);
     }
 
     // for updating
-    if (eventToDispatch) {
-      document.dispatchEvent(eventToDispatch);
-    }
+    // if (eventToDispatch) {
+    //   document.dispatchEvent(eventToDispatch);
+    // }
   });
   return;
 }

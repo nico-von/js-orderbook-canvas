@@ -15,16 +15,16 @@ async function getSnapshot(ticker, limit) {
   return await response.json();
 }
 
-async function applySnapshot(ticker, limit, lobDepth) {
-  console.log("STEP 3");
+async function applySnapshot(ticker, limit, lobDepth, eventToDispatch) {
+  // console.log("STEP 3");
   const snapshot = await getSnapshot(ticker, limit);
-  commitToDepth(snapshot, lobDepth);
+  await commitToDepth(snapshot, lobDepth, eventToDispatch);
   return snapshot.lastUpdateId;
 }
 
-async function processBuffer(ticker, limit, lobDepth) {
+async function processBuffer(ticker, limit, lobDepth, eventToDispatch) {
   if (!lastUpdateId) {
-    console.log("lastUpdate missing");
+    // console.log("lastUpdate missing");
     return;
   }
 
@@ -38,21 +38,26 @@ async function processBuffer(ticker, limit, lobDepth) {
 
   // step 4
   if (event.u < lastUpdateId) {
-    console.log("Step 4");
+    // console.log("Step 4");
 
     // drop event
-    await processBuffer(ticker, limit, lobDepth);
+    await processBuffer(ticker, limit, lobDepth, eventToDispatch);
     return;
   }
 
   // step 5
   if (!firstEventProcessed) {
     if (event.U > lastUpdateId) {
-      console.log("Step 5");
+      // console.log("Step 5");
 
       // go back to step 3
-      lastUpdateId = await applySnapshot(ticker, limit, lobDepth);
-      await processBuffer(ticker, limit, lobDepth);
+      lastUpdateId = await applySnapshot(
+        ticker,
+        limit,
+        lobDepth,
+        eventToDispatch
+      );
+      await processBuffer(ticker, limit, lobDepth, eventToDispatch);
       return;
     } else {
       firstEventProcessed = true;
@@ -63,43 +68,54 @@ async function processBuffer(ticker, limit, lobDepth) {
   // Step 6
   if (lastUpdatedEvent) {
     if (event.pu != lastUpdatedEvent.u) {
-      console.log("step 6");
+      // console.log("step 6");
 
       //reset step 5 and 6 again
       firstEventProcessed = false;
       lastUpdatedEvent = null;
 
       //go back to step 3
-      lastUpdateId = await applySnapshot(ticker, limit, lobDepth);
+      lastUpdateId = await applySnapshot(
+        ticker,
+        limit,
+        lobDepth,
+        eventToDispatch
+      );
 
-      await processBuffer(ticker, limit, lobDepth);
+      await processBuffer(ticker, limit, lobDepth, eventToDispatch);
       return;
     }
   }
 
   // update last updatedEvent
   lastUpdatedEvent = event;
-  commitToDepth(event, lobDepth);
-  await processBuffer(ticker, limit, lobDepth);
+  await commitToDepth(event, lobDepth, eventToDispatch);
+  await processBuffer(ticker, limit, lobDepth, eventToDispatch);
 }
 
 export async function manageOrderBook(
   data,
   dataTicker,
   restQtyLimit,
-  lobDepth
+  lobDepth,
+  eventToDispatch
 ) {
   buffer.push(data);
 
   if (buffer.length === 1) {
     if (!lastUpdateId) {
-      console.log("initial call");
-      lastUpdateId = await applySnapshot(dataTicker, restQtyLimit, lobDepth);
-      await processBuffer(dataTicker, restQtyLimit, lobDepth);
+      // console.log("initial call");
+      lastUpdateId = await applySnapshot(
+        dataTicker,
+        restQtyLimit,
+        lobDepth,
+        eventToDispatch
+      );
+      await processBuffer(dataTicker, restQtyLimit, lobDepth, eventToDispatch);
       return;
     }
 
-    console.log("...");
-    await processBuffer(dataTicker, restQtyLimit, lobDepth);
+    // console.log("...");
+    await processBuffer(dataTicker, restQtyLimit, lobDepth, eventToDispatch);
   }
 }

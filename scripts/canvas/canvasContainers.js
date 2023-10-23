@@ -17,7 +17,8 @@ import {
   canvasTabBottom,
   canvasTabTop,
   canvasTabs,
-  canvasSelector
+  canvasSelector,
+  canvasVis,
 } from "../settings.js";
 
 // GRID
@@ -43,7 +44,7 @@ export const gridContent = new CanvasGridContent(
   cellHeight, // cell height
   gridColumns,
   undefined,
-  undefined,
+  undefined
 );
 
 export const selectorContainer = new CanvasContainer(
@@ -53,7 +54,7 @@ export const selectorContainer = new CanvasContainer(
   mainCanvasLeft,
   canvasSelector,
   undefined
-)
+);
 export const selectorContent = new CanvasGridContent(
   mainCanvasRight,
   mainCanvasBottom * 2,
@@ -64,7 +65,7 @@ export const selectorContent = new CanvasGridContent(
   cellHeight,
   gridColumns,
   undefined,
-  undefined,
+  undefined
 );
 
 // DATA
@@ -87,7 +88,29 @@ export const dataContent = new CanvasGridContent(
   cellHeight,
   gridColumns,
   undefined,
+  undefined
+);
+
+export const visContainer = new CanvasContainer(
+  mainCanvasRight,
+  mainCanvasBottom,
+  mainCanvasTop,
+  mainCanvasLeft,
+  canvasVis,
+  undefined
+);
+
+export const visContent = new CanvasGridContent(
+  mainCanvasRight,
+  mainCanvasBottom * 2,
+  -cellHeight,
+  mainCanvasLeft,
   undefined,
+  gridStartCell,
+  cellHeight,
+  gridColumns,
+  undefined,
+  undefined
 );
 // TAB
 

@@ -114,10 +114,10 @@ export function xManager(i, content, children) {
   }
 }
 
-export function getYPosition(y, currentY, gridOffset, bottom, cellHeight){
+export function getYPosition(y, currentY, gridOffset, bottom, cellHeight) {
   // added back gridOffset to compensate offset
   const relativeY = (y - currentY - gridOffset) / bottom;
-  
-    // get y Position of selected cell
+
+  // get y Position of selected cell
   return Math.floor(relativeY * (bottom / cellHeight));
 }

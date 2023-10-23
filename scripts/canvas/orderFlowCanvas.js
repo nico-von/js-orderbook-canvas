@@ -105,7 +105,8 @@ export class CanvasContainer extends OrderFlowCanvas {
 }
 export class CanvasContent extends OrderFlowCanvas {
   constructor(right, bottom, top, left, draw) {
-    super(right, bottom, top, left, document.createElement("canvas"));
+    // document.createElement("canvas")
+    super(right, bottom, top, left, new OffscreenCanvas(0, 0));
     this.draw = draw;
   }
 }

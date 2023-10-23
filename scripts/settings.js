@@ -15,7 +15,7 @@ export const tabs = [
 // Data Settings
 export const data = {};
 export const ticker = "BTCUSDT";
-export const tickSize = 1;
+export const tickSize = 5;
 export const priceColDecimalLength = 2;
 export const otherColsDecimalLength = 2;
 // Container Settings
@@ -35,11 +35,12 @@ export const gridStartCell = 0;
 // Canvas
 export const canvasGrid = document.getElementById("canvasGrid");
 export const canvasData = document.getElementById("canvasData");
+export const canvasVis = document.getElementById("canvasVis");
 export const canvasTabs = document.getElementById("canvasTabs");
 export const canvasSelector = document.getElementById("canvasSelector");
 
 // fonts
-export const tabTextFont = "0.7rem 'Roboto-Mono', monospace";
+export const tabTextFont = "1rem 'Roboto-Mono', monospace";
 
 // grid colours
 export const gridColourObject = {
@@ -51,13 +52,13 @@ export const gridColourObject = {
   bids: "#478047",
   asks: "#964848",
   buys: "#155e15",
-  sells: "#940e0c"
+  sells: "#940e0c",
 };
 
 //highlight X colour object, key, refers to tab number
-export const highlightXColourObject = { 
-  2: "#00ff00", //bid 
-  6: "#ff0000"  //ask
+export const highlightXColourObject = {
+  2: "#00ff00", //bid
+  6: "#ff0000", //ask
 };
 export const highlightYColourObject = "#d3d3d3A1";
 export const dataTextColour = "#f0f0f0";
