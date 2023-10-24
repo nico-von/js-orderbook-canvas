@@ -5,6 +5,7 @@ import {
   getBestAsk,
   getRelativeLargestDepth,
   getRelativeLargestVp,
+  getRelativeLargestDelta,
 } from "../data/data.js";
 import {
   fillVP,
@@ -14,6 +15,7 @@ import {
   printDelta,
   fillBidAsk,
   fillBuySell,
+  fillDelta,
 } from "./dataContentHelpers.js";
 import {
   gridColourObject,
@@ -132,6 +134,7 @@ export function visDraw(i, nextY, start, end) {
   const largestSvpSell = getRelativeLargestVp(start, end, data, true, false);
   const largestCvpBuy = getRelativeLargestVp(start, end, data, false, true);
   const largestCvpSell = getRelativeLargestVp(start, end, data, false, false);
+  const largestDelta = getRelativeLargestDelta(start, end, data);
 
   // relative
   const svpLarger = Math.max(largestSvpBuy, largestSvpSell);
@@ -161,6 +164,7 @@ export function visDraw(i, nextY, start, end) {
         fillBidAsk(this, i, depthLarger, j, nextY);
         break;
       case 7:
+        fillDelta(this, i, largestDelta, j, nextY);
         break;
       default:
         return;

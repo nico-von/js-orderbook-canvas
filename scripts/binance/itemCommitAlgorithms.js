@@ -25,7 +25,7 @@ export async function commitToDepth(snapshot, lobDepth) {
   // populate accordingly
   let bids = snapshot.e ? snapshot.b : snapshot.bids;
   let asks = snapshot.e ? snapshot.a : snapshot.asks;
-  
+
   //get rid of backlogs
   bidBuffer.length = 0;
   askBuffer.length = 0;
@@ -33,18 +33,22 @@ export async function commitToDepth(snapshot, lobDepth) {
   bidBuffer.push(...bids);
   askBuffer.push(...asks);
 
-  const {tickSize} = lobDepth;
-  if(!lobDepth.customTickSize){
-    lobDepth.bestBid = parseFloat(bids.reduce((p, c) => +p[0] > +c[0] ? p : c)[0]);
-    lobDepth.bestAsk = parseFloat(asks.reduce((p, c) => +p[0] < +c[0] ? p : c)[0]);
+  const { tickSize } = lobDepth;
+  if (!lobDepth.customTickSize) {
+    lobDepth.bestBid = parseFloat(
+      bids.reduce((p, c) => (+p[0] > +c[0] ? p : c))[0]
+    );
+    lobDepth.bestAsk = parseFloat(
+      asks.reduce((p, c) => (+p[0] < +c[0] ? p : c))[0]
+    );
   } else {
     const bB = bids.reduce((p, c) => {
-      const P = roundToNearestTick(+p[0], tickSize);  
+      const P = roundToNearestTick(+p[0], tickSize);
       const C = roundToNearestTick(+c[0], tickSize);
       return P > C ? p : c;
     })[0];
     const bA = asks.reduce((p, c) => {
-      const P = roundToNearestTick(+p[0], tickSize);  
+      const P = roundToNearestTick(+p[0], tickSize);
       const C = roundToNearestTick(+c[0], tickSize);
       return P < C ? p : c;
     })[0];
@@ -58,19 +62,14 @@ export async function commitToDepth(snapshot, lobDepth) {
   await processItem("ask", askBuffer, lobDepth);
 }
 
-async function commitItemWithoutClientTick(
-  item,
-  type,
-  lobDepth
-) {
+async function commitItemWithoutClientTick(item, type, lobDepth) {
   let { decimalLength } = lobDepth;
   let price = parseFloat(item[0]).toFixed(decimalLength);
   let qty = parseFloat(item[1]);
 
   if (type == "bid") {
     // compare targetPrice to bestBid
-   
-    
+
     // compare qty to largestBid
     if (qty > lobDepth.largestBid) {
       lobDepth.largestBid = qty;
@@ -88,7 +87,6 @@ async function commitItemWithoutClientTick(
     };
   } else if (type == "ask") {
     // compare targetPrice to bestAsk
-    
 
     if (qty > lobDepth.largestAsk) {
       lobDepth.largestAsk = qty;
@@ -107,7 +105,6 @@ async function commitItemWithoutClientTick(
   }
 
   // postMessage([lobDepth, "depth"]);
-
 }
 
 function processTargetPrice(targetPriceObject, originalPrice, qty, isDepth) {
@@ -178,7 +175,6 @@ async function commitItemWithClientTick(item, type, lobDepth) {
 
     // compare targetPrice to bestBid
 
-
     // compare qty to largestBid
     if (updatedPriceObject.qty > lobDepth.largestBid) {
       lobDepth.largestBid = updatedPriceObject.qty;
@@ -201,7 +197,6 @@ async function commitItemWithClientTick(item, type, lobDepth) {
     }
 
     // compare targetPrice to bestBid
- 
 
     // compare qty to largestAsk
     if (updatedPriceObject.qty > lobDepth.largestAsk) {
@@ -211,6 +206,15 @@ async function commitItemWithClientTick(item, type, lobDepth) {
     lobDepth.asks[targetPrice] = updatedPriceObject;
   }
   // postMessage([lobDepth, "depth"]);
+}
+
+function commitDelta(marketTrades, priceKey, decimalLength) {
+  const buy = marketTrades.buy[priceKey];
+  const sell = marketTrades.sell[priceKey];
+
+  marketTrades.delta[priceKey] = {
+    qty: ((buy ? buy.qty : 0) - (sell ? sell.qty : 0)).toFixed(decimalLength),
+  };
 }
 
 async function commitLastItemWithoutClientTick(
@@ -241,7 +245,12 @@ async function commitLastItemWithoutClientTick(
     };
   }
 
-// postMessage(marketTrades, "marketTrades", isSession);
+  //calculate delta
+  if (isSession) {
+    commitDelta(marketTrades, priceKey, decimalLength);
+  }
+
+  // postMessage(marketTrades, "marketTrades", isSession);
 }
 
 async function commitLastItemWithClientTick(
@@ -288,7 +297,9 @@ async function commitLastItemWithClientTick(
       marketTrades.buy[targetPrice] = updatedPriceObject;
     }
   }
-
+  if (isSession) {
+    commitDelta(marketTrades, targetPrice, decimalLength);
+  }
   // postMessage([marketTrades, "marketTrades", isSession]);
 }
 export async function commitToMarketTrade(

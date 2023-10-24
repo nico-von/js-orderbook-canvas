@@ -31,11 +31,16 @@ const marketTrades = {
   session: {
     buy: {},
     sell: {},
+    delta: {}
   },
   tickSize: 0,
   decimalLength: 0,
   customTickSize: false,
 };
+
+const worker = new Worker("./scripts/workers/worker.js", {
+  type: "module",
+});
 
 export async function initialiseTicker(
   dataTicker,
@@ -84,12 +89,8 @@ export async function initialiseTicker(
   const drawEvent = new Event("draw");
 
   if (window.Worker) {
-    const worker = new Worker("./scripts/workers/worker.js", {
-      type: "module",
-    });
-
     //Worker related eventListener
-    document.addEventListener("clearTrades", e=> {
+    document.addEventListener("clearTrades", (e) => {
       worker.postMessage(["clearTrades"]);
     });
 
@@ -101,7 +102,6 @@ export async function initialiseTicker(
     ]);
 
     worker.onmessage = (e) => {
-      
       dataObject.depth = e.data[0];
       dataObject.marketTrades = e.data[1];
 
@@ -144,7 +144,7 @@ export function getBestBid(dataObject) {
   if (!(dataObject && dataObject.depth)) {
     return;
   }
-  
+
   return getIndexLevel(dataObject.depth.bestBid, dataObject);
 }
 
@@ -171,8 +171,8 @@ export function getLargestAsk(dataObject) {
 
   return dataObject.depth.largestAsk;
 }
-function getRelLargestQty(start, end, dataObject, mainObject) {
-  if (!dataObject && mainObject) {
+function getRelLargestQty(start, end, dataObject, mainObject, abs) {
+  if (!(dataObject && mainObject)) {
     return;
   }
   let largest = 0;
@@ -180,7 +180,12 @@ function getRelLargestQty(start, end, dataObject, mainObject) {
     const priceLevel = getPriceLevel(i, mainObject);
     const d = dataObject[priceLevel];
     if (d) {
-      largest = d.qty > largest ? d.qty : largest;
+      if(abs) {
+        largest = Math.abs(d.qty) > largest ? Math.abs(d.qty) : largest;
+      } else {
+        largest = d.qty > largest ? d.qty : largest;
+      }
+      
     }
   }
   return largest;
@@ -206,6 +211,7 @@ export function getRelativeLargestVp(start, end, dataObject, isSession, isBuy) {
 
   return getRelLargestQty(start, end, data, dataObject);
 }
+
 export function getBid(i, dataObject, decimalLength) {
   if (!(dataObject && dataObject.depth)) {
     return;
@@ -279,16 +285,16 @@ export function getSell(i, dataObject, decimalLength, isSession) {
   }
 }
 
-export function getDelta(i, dataObject, decimalLength) {
-  if (!(dataObject && dataObject.marketTrades)) {
+export function getDelta(i, dataObject) {
+  if (!dataObject && dataObject.marketTrades.session) {
     return;
   }
 
   const priceLevel = getPriceLevel(i, dataObject);
+  const delta = dataObject.marketTrades.session.delta[priceLevel];
+  return delta ? delta.qty : 0;
+}
 
-  const sessionTrades = dataObject.marketTrades.session;
-  const buy = sessionTrades.buy[priceLevel];
-  const sell = sessionTrades.sell[priceLevel];
-
-  return ((buy ? buy.qty : 0) - (sell ? sell.qty : 0)).toFixed(decimalLength);
+export function getRelativeLargestDelta(start, end, dataObject) {
+  return getRelLargestQty(start, end, dataObject.marketTrades.session.delta, dataObject, true)
 }

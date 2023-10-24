@@ -119,7 +119,7 @@ export function printPrice(content, currPrice, j, nextY) {
 }
 
 export function printDelta(content, i, j, nextY) {
-  let delta = getDelta(i, data, otherColsDecimalLength);
+  let delta = getDelta(i, data);
   let dataText = delta != 0 ? delta : "";
   printText(content, dataText, j, nextY, "left");
 }
@@ -175,5 +175,22 @@ export function fillBuySell(content, i, largestCVPQty, j, nextY, atBBO, isBuy) {
       content.xCoordinate[j]
     );
     strokeGridCell(content, strokeColour, grid[0], dataTextColour);
+  }
+}
+
+export function fillDelta(content, i, largestDelta, j, nextY) {
+  let delta = getDelta(i, data);
+  const widthAdj = Math.abs(delta)/ largestDelta;
+  const grid = drawGridCell(
+    content.cellHeight,
+    content.cellWidths[j] * widthAdj,
+    j,
+    nextY,
+    content.xCoordinate[j]
+  );
+  if (delta > 0) {
+    fillGridCell(content, gridColourObject.buys, grid[0], dataTextColour);
+  } else if (delta < 0) {
+    fillGridCell(content, gridColourObject.sells, grid[0], dataTextColour);
   }
 }

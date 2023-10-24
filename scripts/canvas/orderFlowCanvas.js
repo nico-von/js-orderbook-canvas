@@ -100,7 +100,6 @@ export class CanvasContainer extends OrderFlowCanvas {
 
   handleScroll(e) {
     this.#updateDynamic(e.deltaY);
-    drawOnContainer(this);
   }
 }
 export class CanvasContent extends OrderFlowCanvas {

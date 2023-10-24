@@ -20,10 +20,16 @@ export function wheelHandlerAllContainers(e) {
   if (selectorContainer.isOnCanvas(x, y)) {
     e.preventDefault();
     e.stopPropagation();
+
     gridContainer.handleScroll(e);
     dataContainer.handleScroll(e);
     visContainer.handleScroll(e);
     selectorContainer.handleScroll(e);
+
+    drawOnContainer(tabContainer);
+    drawOnContainer(gridContainer);
+    drawOnContainer(selectorContainer);
+    requestAnimationFrame(rafCallback);
   }
 }
 
@@ -56,9 +62,8 @@ export function mouseMoveHandler(e) {
     // redraw containers
     drawOnContainer(tabContainer);
     drawOnContainer(gridContainer);
-    drawOnContainer(dataContainer);
-    drawOnContainer(visContainer);
     drawOnContainer(selectorContainer);
+    requestAnimationFrame(rafCallback);
   }
 }
 
@@ -74,9 +79,8 @@ export function mouseDownHandler(e) {
     // redraw containers
     drawOnContainer(tabContainer);
     drawOnContainer(gridContainer);
-    drawOnContainer(dataContainer);
-    drawOnContainer(visContainer);
     drawOnContainer(selectorContainer);
+    requestAnimationFrame(rafCallback);
   }
 }
 
@@ -89,9 +93,8 @@ export function mouseUpHandler(e) {
 
     drawOnContainer(tabContainer);
     drawOnContainer(gridContainer);
-    drawOnContainer(dataContainer);
-    drawOnContainer(visContainer);
     drawOnContainer(selectorContainer);
+    requestAnimationFrame(rafCallback);
   }
 }
 
@@ -112,17 +115,18 @@ export function mouseDblClickHandler(e) {
 
   //clear trades
   document.dispatchEvent(clearTradesEvent);
-  drawOnContainer(dataContainer);
-  drawOnContainer(visContainer);
+  requestAnimationFrame(rafCallback);
 }
 
 export function websocketDrawEventHandler(e) {
-  requestAnimationFrame((t) => {
-    if (previousTimestamp < t) {
-      //render only on latest t
-      drawOnContainer(dataContainer, adjustedCanvasTabBottom);
-      drawOnContainer(visContainer, adjustedCanvasTabBottom);
-    } 
-    previousTimestamp = t;
-  });
+  requestAnimationFrame(rafCallback);
+}
+
+function rafCallback(t) {
+  if (previousTimestamp < t) {
+    //render only on latest t
+    drawOnContainer(dataContainer, adjustedCanvasTabBottom);
+    drawOnContainer(visContainer, adjustedCanvasTabBottom);
+  }
+  previousTimestamp = t;
 }
