@@ -10,6 +10,7 @@ import {
 import { adjustedCanvasTabBottom } from "../index.js";
 
 const clearTradesEvent = new Event("clearTrades");
+let previousTimestamp;
 
 export function wheelHandlerAllContainers(e) {
   const container = this.getBoundingClientRect();
@@ -116,7 +117,12 @@ export function mouseDblClickHandler(e) {
 }
 
 export function websocketDrawEventHandler(e) {
-  drawOnContainer(dataContainer, adjustedCanvasTabBottom);
-  drawOnContainer(visContainer, adjustedCanvasTabBottom);
-  
+  requestAnimationFrame((t) => {
+    if (previousTimestamp < t) {
+      //render only on latest t
+      drawOnContainer(dataContainer, adjustedCanvasTabBottom);
+      drawOnContainer(visContainer, adjustedCanvasTabBottom);
+    } 
+    previousTimestamp = t;
+  });
 }

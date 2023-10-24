@@ -141,7 +141,7 @@ export function getIndexLevel(price, dataObject) {
 
 export function getBestBid(dataObject) {
   //returns the index of bestbid
-  if (!(dataObject && dataObject.depth.bestBid)) {
+  if (!(dataObject && dataObject.depth)) {
     return;
   }
   
@@ -150,7 +150,7 @@ export function getBestBid(dataObject) {
 
 export function getBestAsk(dataObject) {
   //returns the index of bestbid
-  if (!(dataObject && dataObject.depth.bestAsk)) {
+  if (!(dataObject && dataObject.depth)) {
     return;
   }
   return getIndexLevel(dataObject.depth.bestAsk, dataObject);

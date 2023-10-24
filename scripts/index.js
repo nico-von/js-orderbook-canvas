@@ -84,7 +84,9 @@ window.onload = function () {
   document.addEventListener("draw", websocketDrawEventHandler);
 
   //initial draw
-  drawOnContainer(selectorContainer, adjustedCanvasTabBottom);
-  drawOnContainer(gridContainer, adjustedCanvasTabBottom);
-  drawOnContainer(tabContainer, adjustedCanvasTabBottom);
+  requestAnimationFrame(() => {
+    drawOnContainer(selectorContainer, adjustedCanvasTabBottom);
+    drawOnContainer(gridContainer, adjustedCanvasTabBottom);
+    drawOnContainer(tabContainer, adjustedCanvasTabBottom);
+  });
 };
