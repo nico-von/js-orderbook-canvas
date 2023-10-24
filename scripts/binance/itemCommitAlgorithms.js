@@ -6,7 +6,7 @@ import {
 let bidBuffer = [];
 let askBuffer = [];
 
-async function processItem(type, arr, lobDepth, eventToDispatch) {
+async function processItem(type, arr, lobDepth) {
   //base case
   if (arr.length === 0) {
     return;
@@ -14,54 +14,63 @@ async function processItem(type, arr, lobDepth, eventToDispatch) {
 
   const item = arr.shift();
   if (!lobDepth.customTickSize) {
-    await commitItemWithoutClientTick(item, type, lobDepth, eventToDispatch);
+    await commitItemWithoutClientTick(item, type, lobDepth);
   } else {
-    await commitItemWithClientTick(item, type, lobDepth, eventToDispatch);
+    await commitItemWithClientTick(item, type, lobDepth);
   }
   await processItem(type, arr, lobDepth);
 }
 
-export async function commitToDepth(snapshot, lobDepth, eventToDispatch) {
+export async function commitToDepth(snapshot, lobDepth) {
   // populate accordingly
   let bids = snapshot.e ? snapshot.b : snapshot.bids;
   let asks = snapshot.e ? snapshot.a : snapshot.asks;
+  
+  //get rid of backlogs
+  bidBuffer.length = 0;
+  askBuffer.length = 0;
 
-  // function iter(arr, type) {
-  //   for (let item of arr) {
-  //     // we need to save these according to
-  //     // client tick sizes
-  //     if (!lobDepth.customTickSize) {
-  //       commitItemWithoutClientTick(item, type, lobDepth);
-  //     } else {
-  //       commitItemWithClientTick(item, type, lobDepth);
-  //     }
-  //   }
-  // }
   bidBuffer.push(...bids);
   askBuffer.push(...asks);
 
-  // iter(bids, "bid");
-  // iter(asks, "ask");
-  if (bidBuffer.length === bids.length) {
-    await processItem("bid", bidBuffer, lobDepth, eventToDispatch);
+  const {tickSize} = lobDepth;
+  if(!lobDepth.customTickSize){
+    lobDepth.bestBid = parseFloat(bids.reduce((p, c) => +p[0] > +c[0] ? p : c)[0]);
+    lobDepth.bestAsk = parseFloat(asks.reduce((p, c) => +p[0] < +c[0] ? p : c)[0]);
+  } else {
+    const bB = bids.reduce((p, c) => {
+      const P = roundToNearestTick(+p[0], tickSize);  
+      const C = roundToNearestTick(+c[0], tickSize);
+      return P > C ? p : c;
+    })[0];
+    const bA = asks.reduce((p, c) => {
+      const P = roundToNearestTick(+p[0], tickSize);  
+      const C = roundToNearestTick(+c[0], tickSize);
+      return P < C ? p : c;
+    })[0];
+    lobDepth.bestBid = roundToNearestTick(bB, tickSize);
+    lobDepth.bestAsk = roundToNearestTick(bA, tickSize);
+
+    //reduce is said to be faster
   }
 
-  if (askBuffer.length === asks.length) {
-    await processItem("ask", askBuffer, lobDepth, eventToDispatch);
-  }
+  await processItem("bid", bidBuffer, lobDepth);
+  await processItem("ask", askBuffer, lobDepth);
 }
 
 async function commitItemWithoutClientTick(
   item,
   type,
-  lobDepth,
-  eventToDispatch
+  lobDepth
 ) {
   let { decimalLength } = lobDepth;
   let price = parseFloat(item[0]).toFixed(decimalLength);
   let qty = parseFloat(item[1]);
 
   if (type == "bid") {
+    // compare targetPrice to bestBid
+   
+    
     // compare qty to largestBid
     if (qty > lobDepth.largestBid) {
       lobDepth.largestBid = qty;
@@ -78,6 +87,9 @@ async function commitItemWithoutClientTick(
       priceFloat: parseFloat(price),
     };
   } else if (type == "ask") {
+    // compare targetPrice to bestAsk
+    
+
     if (qty > lobDepth.largestAsk) {
       lobDepth.largestAsk = qty;
     }
@@ -94,9 +106,8 @@ async function commitItemWithoutClientTick(
     };
   }
 
-  if (eventToDispatch) {
-    document.dispatchEvent(eventToDispatch);
-  }
+  // postMessage([lobDepth, "depth"]);
+
 }
 
 function processTargetPrice(targetPriceObject, originalPrice, qty, isDepth) {
@@ -133,7 +144,7 @@ function processTargetPrice(targetPriceObject, originalPrice, qty, isDepth) {
   }
 }
 
-async function commitItemWithClientTick(item, type, lobDepth, eventToDispatch) {
+async function commitItemWithClientTick(item, type, lobDepth) {
   // parseFloat price here to be able to
   // calculate its nearest tick
   let price = parseFloat(item[0]);
@@ -165,6 +176,9 @@ async function commitItemWithClientTick(item, type, lobDepth, eventToDispatch) {
       return;
     }
 
+    // compare targetPrice to bestBid
+
+
     // compare qty to largestBid
     if (updatedPriceObject.qty > lobDepth.largestBid) {
       lobDepth.largestBid = updatedPriceObject.qty;
@@ -186,6 +200,9 @@ async function commitItemWithClientTick(item, type, lobDepth, eventToDispatch) {
       return;
     }
 
+    // compare targetPrice to bestBid
+ 
+
     // compare qty to largestAsk
     if (updatedPriceObject.qty > lobDepth.largestAsk) {
       lobDepth.largestAsk = updatedPriceObject.qty;
@@ -193,17 +210,14 @@ async function commitItemWithClientTick(item, type, lobDepth, eventToDispatch) {
 
     lobDepth.asks[targetPrice] = updatedPriceObject;
   }
-
-  if (eventToDispatch) {
-    document.dispatchEvent(eventToDispatch);
-  }
+  // postMessage([lobDepth, "depth"]);
 }
 
 async function commitLastItemWithoutClientTick(
   lastTrade,
   marketTrades,
   decimalLength,
-  eventToDispatch
+  isSession
 ) {
   const { price, type, qty } = lastTrade;
 
@@ -227,9 +241,7 @@ async function commitLastItemWithoutClientTick(
     };
   }
 
-  if (eventToDispatch) {
-    document.dispatchEvent(eventToDispatch);
-  }
+// postMessage(marketTrades, "marketTrades", isSession);
 }
 
 async function commitLastItemWithClientTick(
@@ -237,7 +249,7 @@ async function commitLastItemWithClientTick(
   marketTrades,
   tickSize,
   decimalLength,
-  eventToDispatch
+  isSession
 ) {
   const { price, type, qty } = lastTrade;
   const targetPrice = roundToNearestTick(price, tickSize).toFixed(
@@ -277,9 +289,7 @@ async function commitLastItemWithClientTick(
     }
   }
 
-  if (eventToDispatch) {
-    document.dispatchEvent(eventToDispatch);
-  }
+  // postMessage([marketTrades, "marketTrades", isSession]);
 }
 export async function commitToMarketTrade(
   data,
@@ -287,14 +297,14 @@ export async function commitToMarketTrade(
   customTickSize,
   tickSize,
   decimalLength,
-  eventToDispatch
+  isSession
 ) {
   if (!customTickSize) {
     await commitLastItemWithoutClientTick(
       data,
       marketTrades,
       decimalLength,
-      eventToDispatch
+      isSession
     );
   } else {
     await commitLastItemWithClientTick(
@@ -302,7 +312,7 @@ export async function commitToMarketTrade(
       marketTrades,
       tickSize,
       decimalLength,
-      eventToDispatch
+      isSession
     );
   }
 }

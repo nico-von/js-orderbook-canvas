@@ -15,14 +15,14 @@ async function getSnapshot(ticker, limit) {
   return await response.json();
 }
 
-async function applySnapshot(ticker, limit, lobDepth, eventToDispatch) {
+async function applySnapshot(ticker, limit, lobDepth) {
   // console.log("STEP 3");
   const snapshot = await getSnapshot(ticker, limit);
-  await commitToDepth(snapshot, lobDepth, eventToDispatch);
+  await commitToDepth(snapshot, lobDepth);
   return snapshot.lastUpdateId;
 }
 
-async function processBuffer(ticker, limit, lobDepth, eventToDispatch) {
+async function processBuffer(ticker, limit, lobDepth) {
   if (!lastUpdateId) {
     // console.log("lastUpdate missing");
     return;
@@ -41,7 +41,7 @@ async function processBuffer(ticker, limit, lobDepth, eventToDispatch) {
     // console.log("Step 4");
 
     // drop event
-    await processBuffer(ticker, limit, lobDepth, eventToDispatch);
+    await processBuffer(ticker, limit, lobDepth);
     return;
   }
 
@@ -55,9 +55,8 @@ async function processBuffer(ticker, limit, lobDepth, eventToDispatch) {
         ticker,
         limit,
         lobDepth,
-        eventToDispatch
       );
-      await processBuffer(ticker, limit, lobDepth, eventToDispatch);
+      await processBuffer(ticker, limit, lobDepth);
       return;
     } else {
       firstEventProcessed = true;
@@ -78,19 +77,18 @@ async function processBuffer(ticker, limit, lobDepth, eventToDispatch) {
       lastUpdateId = await applySnapshot(
         ticker,
         limit,
-        lobDepth,
-        eventToDispatch
+        lobDepth
       );
 
-      await processBuffer(ticker, limit, lobDepth, eventToDispatch);
+      await processBuffer(ticker, limit, lobDepth);
       return;
     }
   }
 
   // update last updatedEvent
   lastUpdatedEvent = event;
-  await commitToDepth(event, lobDepth, eventToDispatch);
-  await processBuffer(ticker, limit, lobDepth, eventToDispatch);
+  await commitToDepth(event, lobDepth);
+  await processBuffer(ticker, limit, lobDepth);
 }
 
 export async function manageOrderBook(
@@ -98,7 +96,6 @@ export async function manageOrderBook(
   dataTicker,
   restQtyLimit,
   lobDepth,
-  eventToDispatch
 ) {
   buffer.push(data);
 
@@ -109,13 +106,12 @@ export async function manageOrderBook(
         dataTicker,
         restQtyLimit,
         lobDepth,
-        eventToDispatch
       );
-      await processBuffer(dataTicker, restQtyLimit, lobDepth, eventToDispatch);
+      await processBuffer(dataTicker, restQtyLimit, lobDepth);
       return;
     }
 
     // console.log("...");
-    await processBuffer(dataTicker, restQtyLimit, lobDepth, eventToDispatch);
+    await processBuffer(dataTicker, restQtyLimit, lobDepth);
   }
 }

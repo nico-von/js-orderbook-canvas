@@ -9,6 +9,8 @@ import {
 } from "./canvasContainers.js";
 import { adjustedCanvasTabBottom } from "../index.js";
 
+const clearTradesEvent = new Event("clearTrades");
+
 export function wheelHandlerAllContainers(e) {
   const container = this.getBoundingClientRect();
   const x = e.clientX - container.left;
@@ -108,15 +110,7 @@ export function mouseDblClickHandler(e) {
   const y = e.clientY - container.top;
 
   //clear trades
-  if (selectorContainer.isOnCanvas(x, y)) {
-    const client = data.marketTrades.client;
-    Object.keys(client.buy).forEach((key) => {
-      delete client.buy[key];
-    });
-    Object.keys(client.sell).forEach((key) => {
-      delete client.sell[key];
-    });
-  }
+  document.dispatchEvent(clearTradesEvent);
   drawOnContainer(dataContainer);
   drawOnContainer(visContainer);
 }
@@ -124,4 +118,5 @@ export function mouseDblClickHandler(e) {
 export function websocketDrawEventHandler(e) {
   drawOnContainer(dataContainer, adjustedCanvasTabBottom);
   drawOnContainer(visContainer, adjustedCanvasTabBottom);
+  
 }

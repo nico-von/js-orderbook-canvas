@@ -16,6 +16,8 @@ const depth = {
   asks: {},
   largestBid: 0,
   largestAsk: 0,
+  bestBid: 0,
+  bestAsk: 0,
   tickSize: 0,
   decimalLength: 0,
   customTickSize: false,
@@ -81,14 +83,44 @@ export async function initialiseTicker(
   // eventObject
   const drawEvent = new Event("draw");
 
+  if (window.Worker) {
+    const worker = new Worker("./scripts/workers/worker.js", {
+      type: "module",
+    });
+
+    //Worker related eventListener
+    document.addEventListener("clearTrades", e=> {
+      worker.postMessage(["clearTrades"]);
+    });
+
+    worker.postMessage([
+      ticker.toLowerCase(),
+      "1000",
+      dataObject.depth,
+      dataObject.marketTrades,
+    ]);
+
+    worker.onmessage = (e) => {
+      
+      dataObject.depth = e.data[0];
+      dataObject.marketTrades = e.data[1];
+
+      document.dispatchEvent(drawEvent);
+    };
+
+    worker.onerror = (e) => {
+      console.log("error");
+    };
+  }
+
   // start web socket
-  initialiseWebSocket(
-    ticker.toLowerCase(),
-    "1000",
-    drawEvent,
-    dataObject.depth,
-    dataObject.marketTrades
-  );
+  // initialiseWebSocket(
+  //   ticker.toLowerCase(),
+  //   "1000",
+  //   drawEvent,
+  //   dataObject.depth,
+  //   dataObject.marketTrades
+  // );
 }
 
 export function getPriceLevel(i, dataObject) {
@@ -109,32 +141,19 @@ export function getIndexLevel(price, dataObject) {
 
 export function getBestBid(dataObject) {
   //returns the index of bestbid
-  if (!(dataObject && dataObject.depth)) {
+  if (!(dataObject && dataObject.depth.bestBid)) {
     return;
   }
-  const bids = Object.keys(dataObject.depth.bids).map((d) => {
-    const bid = parseFloat(d);
-    if (bid) {
-      return bid;
-    }
-    return;
-  });
-  return getIndexLevel(Math.max(...bids), dataObject);
+  
+  return getIndexLevel(dataObject.depth.bestBid, dataObject);
 }
 
 export function getBestAsk(dataObject) {
   //returns the index of bestbid
-  if (!(dataObject && dataObject.depth)) {
+  if (!(dataObject && dataObject.depth.bestAsk)) {
     return;
   }
-  const asks = Object.keys(dataObject.depth.asks).map((d) => {
-    const ask = parseFloat(d);
-    if (ask) {
-      return ask;
-    }
-    return;
-  });
-  return getIndexLevel(Math.min(...asks), dataObject);
+  return getIndexLevel(dataObject.depth.bestAsk, dataObject);
 }
 
 export function getLargestBid(dataObject) {

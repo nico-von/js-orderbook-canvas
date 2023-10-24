@@ -16,6 +16,8 @@ export const tabs = [
 export const data = {};
 export const ticker = "BTCUSDT";
 export const tickSize = 5;
+
+
 export const priceColDecimalLength = 2;
 export const otherColsDecimalLength = 2;
 // Container Settings

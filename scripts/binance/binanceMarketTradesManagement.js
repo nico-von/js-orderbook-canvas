@@ -23,7 +23,7 @@ export async function manageMarketTrades(data, marketTrades, eventToDispatch) {
     customTickSize,
     tickSize,
     decimalLength,
-    eventToDispatch
+    false
   );
   // have to commit it to SVP too, because marketTrades
   // is regularly cleared, and I think (for now) that
@@ -35,6 +35,6 @@ export async function manageMarketTrades(data, marketTrades, eventToDispatch) {
     customTickSize,
     tickSize,
     decimalLength,
-    eventToDispatch
+    true
   );
 }
