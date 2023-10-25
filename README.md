@@ -5,38 +5,38 @@ This is a CS50 final project codebase.
 
 #### Description:
 
-##### Vanilla HTML
-For CS50 final project purposes - primarily to maintain CS50's low-level spirit, this is a vanilla HTML project. This is a live orderbook webapp written with js and canvas. A little introduction about the project - traders often use an order book to visualize orders, trades, and liquidity.
+##### Vanilla HTML5
+For the CS50 final project, this codebase is dedicated to maintaining CS50's low-level spirit with a vanilla HTML project. It presents a live orderbook webapp created using JavaScript and canvas. To provide a brief introduction to an orderbook visualisation, traders often employ it to visualise orders, trades, and liquidity.
 
 ##### Features
-1. Live Level 2 Data (I used Binance data because it is free; other providers, especially for futures and stocks, are all behind a paywall.)
-2. Unlimited Scrolling: you can view all available data of all prices (so long as provided by the API). 
-3. Adjustable tickSize(granularity): you can use any granularity you want, so long as it doesn't go beyond the least granularity (see tickSize on settings.js)
-4. Session Volume Profile depicts all traded volume from session start to current time.
-5. Client Volume Profile, can be reset by double-clicking on any part of the canvas.
-6. Volume delta, which depicts buying and selling pressure.
-7. Market trades can also be reset by double-clicking any part of the canvas. 
-8. Bar sizes are all relative to the largest bar of the same type to display scale.
-9. Adjustable tab sizes. 
-10. HD Canvas
 
-Note: All colors and other settings may be found from the settings.js; see *Project Limitations* for more information.
+1. Live Level 2 Data: I've utilized Binance data, as it is freely available. Please note that other providers, especially for futures and stocks, may require a paid subscription.
+2. Unlimited Scrolling: You can access all available data for various prices, as long as the API provides it.
+3. Adjustable tickSize (granularity): You have the flexibility to choose your preferred granularity, provided it doesn't exceed the minimum granularity (refer to 'tickSize' in settings.js).
+4. Session Volume Profile: This feature illustrates all traded volumes from the beginning of the session to the current time.
+5. Client Volume Profile: Similar To SVP but is reset as per your request. You can do this by double-clicking on any part of the orderbook.
+6. Volume delta: This aspect visually represents buying and selling pressure.
+7. Market trades: can also be reset by double-clicking on any part of the canvas.
+8. Bar sizes: are relative to the largest bar of the same type, ensuring an accurate scale.
+9. Adjustable tab sizes.
+10. High-Definition Canvas. 
 
-##### GIF
+Please note that all colors and additional settings can be found in settings.js. See the 'Project Limitations' section for more details.
 
 ##### Project Limitations
-This project only showcases the order book. I have not placed editable settings on the UI for changing the instrument, canvas height, colours, etc. However, settings.js contains all of the variables that enable dynamism.  
+
+This project exclusively focuses on the order book and does not include editable settings on the user interface for altering instruments, canvas height, colors, etc. However, settings.js contains all the variables required to customize the order book.
 
 ##### Background and Technology
 
 ###### Canvas
-At first, I thought of using SVG (with D3js); however, upon inspecting other web apps for similar purposes (stock trading and the like), it appears that, instead of SVG, they utilise canvas. Without any knowledge of Canvas, therefore, this final project was not just a reiteration of things I have previously learned from this course, but It was also a challenge for me to learn something new, which I primarily utilized MDN documentation for it. 
 
-Additionally, I may have mentioned that this is purely a vanilla html & js project; however, there is an exception about this. I used d3's linearScale function for my price scale calculation for ease. 
+Initially, I contemplated using SVG (with D3.js). However, after inspecting other web applications with similar purposes, such as stock trading, it became evident that canvas, rather than SVG, is the preferred choice. Despite having no prior knowledge of canvas, this final project became an opportunity for me to learn something new, primarily relying on MDN documentation.
+
+Additionally, I should mention that while this is a primarily vanilla HTML and JavaScript project, there is an exception. I employed D3's linearScale function for price scale calculations, making it more manageable.
 
 ###### Performance
-Regarding the performance of the order book, it uses heavy calculations on the client side, which, I think, is best done from the backend. As a workaround, I utilised web workers to reduce the load on the client. Additionally, I used multiple canvases, each being a layer of the entire order book and requestAnimationFrame() for rendering frequently updated canvases. However, lag may persist, especially during highly volatile times. Performance is also dependent on the size of the canvas, as rendering relies on the count of the rows of the order book.
 
+Regarding the order book visualisation's performance, it involves intensive client-side calculations, which are typically better suited for backend processing. To address this, I utilized web workers to alleviate the client's load. I also used multiple canvases, each serving as a layer of the complete order book, and implemented requestAnimationFrame() for rendering frequently updated canvases. However, please be aware that lag may still occur, especially during highly volatile periods. The performance is also influenced by the canvas size, as rendering depends on the number of order book rows.
 
-
-> Seek and ye shall find.
+> Seek, and you shall find.
