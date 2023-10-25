@@ -688,7 +688,6 @@ tabContent.draw = tabDraw;
 tabContent.children = [gridContent, dataContent];
 
 window.onload = function () {
-  console.log("HEY");
   // smoothen canvases
   smoothifyCanvases(gridContainer, gridContent);
   smoothifyCanvases(dataContainer, dataContent);

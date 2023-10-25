@@ -39,6 +39,8 @@ dataContent.draw = dataDraw;
 visContent.draw = visDraw;
 tabContent.draw = tabDraw;
 selectorContent.draw = selectorDraw;
+
+visContent.callRelativeQty = true;
 //set children
 tabContent.children = [gridContent, dataContent, visContent, selectorContent];
 
@@ -46,7 +48,6 @@ tabContent.children = [gridContent, dataContent, visContent, selectorContent];
 initialiseTicker(ticker, tickSize, priceColDecimalLength, data);
 
 window.onload = function () {
-  console.log("HEY");
   // smoothen canvases
   smoothifyCanvases(gridContainer, gridContent);
   smoothifyCanvases(dataContainer, dataContent);

@@ -3,8 +3,6 @@ export function roundToNearestTick(x, tickSize) {
   return Math.round(x / tickSize) * tickSize;
 }
 
-
 export function sumAllValues(object) {
   return Object.values(object).reduce((a, b) => a + b, 0);
 }
-

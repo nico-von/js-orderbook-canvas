@@ -1,5 +1,6 @@
 import { drawOnContainer } from "./canvasFunctions.js";
-
+import { getRelLargestQty } from "../data/data.js";
+import { data } from "../settings.js";
 class OrderFlowCanvas {
   constructor(right, bottom, top, left, canvas) {
     this.right = right; //also width
@@ -145,6 +146,9 @@ export class CanvasGridContent extends CanvasContent {
     // calculate for endCell
     const endCell = this.startCell + totalCells;
     // start loop
+    if (this.callRelativeQty) {
+      getRelLargestQty(this.startCell, endCell, data);
+    }
     for (let i = this.startCell; i < endCell; i++) {
       let nextY = Math.round(i) + this.currentY / this.cellHeight;
 
@@ -153,7 +157,6 @@ export class CanvasGridContent extends CanvasContent {
       if (realY > this.bottom || realY < this.top) {
         continue;
       }
-
       // ctx jobs
       this.draw(i, nextY, this.startCell, endCell);
     }

@@ -1,4 +1,11 @@
-import { getBuy, getSell, getBid, getAsk, getDelta } from "../data/data.js";
+import {
+  getBuy,
+  getSell,
+  getBid,
+  getAsk,
+  getDelta,
+  getVP,
+} from "../data/data.js";
 import {
   data,
   otherColsDecimalLength,
@@ -53,10 +60,11 @@ export function fillVP(content, i, vpLarger, isSession, j, nextY) {
   const vpSellWidthAdj = vpSell / vpLarger;
 
   const vpLower = vpBuyHigher ? vpSellWidthAdj : vpBuyWidthAdj;
-  const vpLowerWidth = content.cellWidths[j] * vpLower;
+  const vpLowerWidth = content.cellWidths[j] * (vpLower > 1 ? 1 : vpLower);
 
   const vpHigher = vpBuyHigher ? vpBuyWidthAdj : vpSellWidthAdj;
-  const vpHigherWidth = content.cellWidths[j] * vpHigher - vpLowerWidth;
+  const vpHigherWidth =
+    content.cellWidths[j] * (vpHigher > 1 ? 1 : vpHigher) - vpLowerWidth;
 
   const gridfillStyle = vpBuyHigher
     ? gridColourObject.sells
@@ -87,6 +95,12 @@ export function fillVP(content, i, vpLarger, isSession, j, nextY) {
   );
 
   fillGridCell(content, gridOuterFillStyle, gridOuter[0], dataTextColour);
+}
+
+export function printVP(content, i, isSession, j, nextY) {
+  const vp = getVP(i, data, otherColsDecimalLength, isSession);
+  let dataText = vp ? vp : "";
+  printText(content, dataText, j, nextY, "left");
 }
 
 export function printBidAsk(content, i, j, nextY, isBid) {
@@ -120,7 +134,7 @@ export function printPrice(content, currPrice, j, nextY) {
 
 export function printDelta(content, i, j, nextY) {
   let delta = getDelta(i, data);
-  let dataText = delta != 0 ? delta : "";
+  let dataText = delta != 0 ? delta.toFixed(otherColsDecimalLength) : "";
   printText(content, dataText, j, nextY, "left");
 }
 
@@ -129,8 +143,8 @@ export function fillBidAsk(content, i, largestQty, j, nextY, isBid) {
     ? getBid(i, data, otherColsDecimalLength)
     : getAsk(i, data, otherColsDecimalLength);
   if (d) {
-    const widthAdjustment = +d / largestQty;
-    const gridWidth = content.cellWidths[j] * widthAdjustment;
+    const widthAdj = +d / largestQty;
+    const gridWidth = content.cellWidths[j] * (widthAdj > 1 ? 1 : widthAdj);
     const gridOffset = isBid ? content.cellWidths[j] - gridWidth : 0;
     const gridColour = isBid ? gridColourObject.bids : gridColourObject.asks;
     const grid = drawGridCell(
@@ -150,7 +164,7 @@ export function fillBuySell(content, i, largestCVPQty, j, nextY, atBBO, isBuy) {
     : getSell(i, data, otherColsDecimalLength, false);
   if (d) {
     const widthAdj = +d / largestCVPQty;
-    const gridWidth = content.cellWidths[j] * widthAdj;
+    const gridWidth = content.cellWidths[j] * (widthAdj > 1 ? 1 : widthAdj); //compensate for trivial worker message delay
     const gridOffset = isBuy ? content.cellWidths[j] - gridWidth : 0;
     const gridColour = isBuy ? gridColourObject.buys : gridColourObject.sells;
     const grid = drawGridCell(
@@ -180,10 +194,10 @@ export function fillBuySell(content, i, largestCVPQty, j, nextY, atBBO, isBuy) {
 
 export function fillDelta(content, i, largestDelta, j, nextY) {
   let delta = getDelta(i, data);
-  const widthAdj = Math.abs(delta)/ largestDelta;
+  const widthAdj = Math.abs(delta) / largestDelta;
   const grid = drawGridCell(
     content.cellHeight,
-    content.cellWidths[j] * widthAdj,
+    content.cellWidths[j] * (widthAdj > 1 ? 1 : widthAdj),
     j,
     nextY,
     content.xCoordinate[j]

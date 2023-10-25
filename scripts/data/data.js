@@ -1,8 +1,6 @@
 import { scaleLinear } from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
-import { initialiseWebSocket } from "../binance/binanceWebSocket.js";
 import { manageTicker } from "../binance/binanceTickerData.js";
 import { roundToNearestTick } from "../misc/numberManipulationFunctions.js";
-import { data } from "../settings.js";
 
 // use dataObject parameter here for the benefit of index.js
 // dataObject will originate from index.js and will be modified through
@@ -27,18 +25,30 @@ const marketTrades = {
   client: {
     buy: {},
     sell: {},
+    vp: {},
   },
   session: {
     buy: {},
     sell: {},
-    delta: {}
+    delta: {},
+    vp: {},
   },
   tickSize: 0,
   decimalLength: 0,
   customTickSize: false,
 };
 
+const relData = {
+  session: 0,
+  sessionDelta: 0,
+  client: 0,
+  depth: 0,
+};
 const worker = new Worker("./scripts/workers/worker.js", {
+  type: "module",
+});
+
+const calcWorker = new Worker("./scripts/workers/calcWorker.js", {
   type: "module",
 });
 
@@ -50,11 +60,13 @@ export async function initialiseTicker(
 ) {
   // client tick size is the tick size required by the client
   // and not the tick size from the binance stream
-
   const { ticker, tickSize, lastPrice } = await manageTicker(dataTicker);
 
   const tickSizeToUse = clientTickSize > tickSize ? clientTickSize : +tickSize;
   let tickAdjustedLastPrice = +lastPrice;
+
+  // relative data
+  dataObject.relData = relData;
 
   // depth object
   dataObject.depth = depth;
@@ -112,15 +124,6 @@ export async function initialiseTicker(
       console.log("error");
     };
   }
-
-  // start web socket
-  // initialiseWebSocket(
-  //   ticker.toLowerCase(),
-  //   "1000",
-  //   drawEvent,
-  //   dataObject.depth,
-  //   dataObject.marketTrades
-  // );
 }
 
 export function getPriceLevel(i, dataObject) {
@@ -171,45 +174,34 @@ export function getLargestAsk(dataObject) {
 
   return dataObject.depth.largestAsk;
 }
-function getRelLargestQty(start, end, dataObject, mainObject, abs) {
-  if (!(dataObject && mainObject)) {
-    return;
-  }
-  let largest = 0;
-  for (let i = start; i < end; i++) {
-    const priceLevel = getPriceLevel(i, mainObject);
-    const d = dataObject[priceLevel];
-    if (d) {
-      if(abs) {
-        largest = Math.abs(d.qty) > largest ? Math.abs(d.qty) : largest;
-      } else {
-        largest = d.qty > largest ? d.qty : largest;
-      }
-      
-    }
-  }
-  return largest;
-}
-
-export function getRelativeLargestDepth(start, end, dataObject, isBid) {
-  if (!(dataObject && dataObject.depth)) {
+export async function getRelLargestQty(start, end, mainObject) {
+  if (!mainObject) {
     return;
   }
 
-  const data = isBid ? dataObject.depth.bids : dataObject.depth.asks;
-  return getRelLargestQty(start, end, data, dataObject);
-}
+  const startPriceLevel = getPriceLevel(start, mainObject);
+  const endPriceLevel = getPriceLevel(end, mainObject);
+  if (window.Worker) {
+    calcWorker.postMessage([
+      startPriceLevel,
+      endPriceLevel,
+      mainObject.depth,
+      mainObject.marketTrades,
+    ]);
 
-export function getRelativeLargestVp(start, end, dataObject, isSession, isBuy) {
-  if (!(dataObject && dataObject.marketTrades)) {
-    return;
+    calcWorker.onmessage = (e) => {
+      const [largestDepth, largestDelta, largestMTSession, largestMTClient] =
+        e.data;
+      mainObject.relData.depth = largestDepth;
+      mainObject.relData.session = largestMTSession;
+      mainObject.relData.sessionDelta = largestDelta;
+      mainObject.relData.client = largestMTClient;
+    };
+
+    calcWorker.onerror = (e) => {
+      console.log("calcworker err");
+    };
   }
-  const session = isSession
-    ? dataObject.marketTrades.session
-    : dataObject.marketTrades.client;
-  const data = isBuy ? session.buy : session.sell;
-
-  return getRelLargestQty(start, end, data, dataObject);
 }
 
 export function getBid(i, dataObject, decimalLength) {
@@ -264,6 +256,25 @@ export function getBuy(i, dataObject, decimalLength, isSession) {
   }
 }
 
+export function getVP(i, dataObject, decimalLength, isSession) {
+  if (!(dataObject && dataObject.marketTrades)) {
+    return;
+  }
+  const priceLevel = getPriceLevel(i, dataObject);
+  let vp;
+  if (isSession) {
+    vp = dataObject.marketTrades.session.vp[priceLevel];
+  } else {
+    vp = dataObject.marketTrades.client.vp[priceLevel];
+  }
+
+  if (vp) {
+    return vp.qty.toFixed(decimalLength);
+  } else {
+    return 0;
+  }
+}
+
 export function getSell(i, dataObject, decimalLength, isSession) {
   if (!(dataObject && dataObject.marketTrades)) {
     return;
@@ -293,8 +304,4 @@ export function getDelta(i, dataObject) {
   const priceLevel = getPriceLevel(i, dataObject);
   const delta = dataObject.marketTrades.session.delta[priceLevel];
   return delta ? delta.qty : 0;
-}
-
-export function getRelativeLargestDelta(start, end, dataObject) {
-  return getRelLargestQty(start, end, dataObject.marketTrades.session.delta, dataObject, true)
 }

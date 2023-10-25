@@ -3,9 +3,7 @@ import {
   getPriceLevel,
   getBestBid,
   getBestAsk,
-  getRelativeLargestDepth,
-  getRelativeLargestVp,
-  getRelativeLargestDelta,
+  getRelLargestQty,
 } from "../data/data.js";
 import {
   fillVP,
@@ -16,6 +14,7 @@ import {
   fillBidAsk,
   fillBuySell,
   fillDelta,
+  printVP,
 } from "./dataContentHelpers.js";
 import {
   gridColourObject,
@@ -116,7 +115,7 @@ export function selectorDraw(i, nextY, start, end) {
     // stroke grids
   }
 }
-export function visDraw(i, nextY, start, end) {
+export async function visDraw(i, nextY, start, end) {
   // default fill style
   this.ctx.fillStyle = dataTextColour;
 
@@ -127,19 +126,11 @@ export function visDraw(i, nextY, start, end) {
   const atBestBid = Math.round(i) == bestBid;
   const atBestAsk = Math.round(i) == bestAsk;
 
-  // largest
-  const largestBid = getRelativeLargestDepth(start, end, data, true);
-  const largestAsk = getRelativeLargestDepth(start, end, data, false);
-  const largestSvpBuy = getRelativeLargestVp(start, end, data, true, true);
-  const largestSvpSell = getRelativeLargestVp(start, end, data, true, false);
-  const largestCvpBuy = getRelativeLargestVp(start, end, data, false, true);
-  const largestCvpSell = getRelativeLargestVp(start, end, data, false, false);
-  const largestDelta = getRelativeLargestDelta(start, end, data);
-
   // relative
-  const svpLarger = Math.max(largestSvpBuy, largestSvpSell);
-  const cvpLarger = Math.max(largestCvpBuy, largestCvpSell);
-  const depthLarger = Math.max(largestBid, largestAsk);
+  const depthLarger = data.relData.depth;
+  const deltaLarger = data.relData.sessionDelta;
+  const svpLarger = data.relData.session;
+  const cvpLarger = data.relData.client;
 
   for (let j = 0; j < this.gridColumnCount; j++) {
     switch (j) {
@@ -164,7 +155,7 @@ export function visDraw(i, nextY, start, end) {
         fillBidAsk(this, i, depthLarger, j, nextY);
         break;
       case 7:
-        fillDelta(this, i, largestDelta, j, nextY);
+        fillDelta(this, i, deltaLarger, j, nextY);
         break;
       default:
         return;
@@ -181,8 +172,10 @@ export function dataDraw(i, nextY, start, end) {
   for (let j = 0; j < this.gridColumnCount; j++) {
     switch (j) {
       case 0:
+        printVP(this, i, true, j, nextY);
         break;
       case 1:
+        printVP(this, i, false, j, nextY);
         break;
       case 2:
         printBidAsk(this, i, j, nextY, true);

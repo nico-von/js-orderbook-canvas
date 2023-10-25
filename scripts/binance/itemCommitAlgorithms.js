@@ -103,8 +103,6 @@ async function commitItemWithoutClientTick(item, type, lobDepth) {
       priceFloat: parseFloat(price),
     };
   }
-
-  // postMessage([lobDepth, "depth"]);
 }
 
 function processTargetPrice(targetPriceObject, originalPrice, qty, isDepth) {
@@ -205,15 +203,23 @@ async function commitItemWithClientTick(item, type, lobDepth) {
 
     lobDepth.asks[targetPrice] = updatedPriceObject;
   }
-  // postMessage([lobDepth, "depth"]);
 }
 
-function commitDelta(marketTrades, priceKey, decimalLength) {
+function commitDelta(marketTrades, priceKey) {
   const buy = marketTrades.buy[priceKey];
   const sell = marketTrades.sell[priceKey];
 
   marketTrades.delta[priceKey] = {
-    qty: ((buy ? buy.qty : 0) - (sell ? sell.qty : 0)).toFixed(decimalLength),
+    qty: (buy ? buy.qty : 0) - (sell ? sell.qty : 0),
+  };
+}
+
+function commitVP(marketTrades, priceKey) {
+  const buy = marketTrades.buy[priceKey];
+  const sell = marketTrades.sell[priceKey];
+
+  marketTrades.vp[priceKey] = {
+    qty: (buy ? buy.qty : 0) + (sell ? sell.qty : 0),
   };
 }
 
@@ -247,10 +253,9 @@ async function commitLastItemWithoutClientTick(
 
   //calculate delta
   if (isSession) {
-    commitDelta(marketTrades, priceKey, decimalLength);
+    commitDelta(marketTrades, priceKey);
   }
-
-  // postMessage(marketTrades, "marketTrades", isSession);
+  commitVP(marketTrades, priceKey);
 }
 
 async function commitLastItemWithClientTick(
@@ -298,9 +303,9 @@ async function commitLastItemWithClientTick(
     }
   }
   if (isSession) {
-    commitDelta(marketTrades, targetPrice, decimalLength);
+    commitDelta(marketTrades, targetPrice);
   }
-  // postMessage([marketTrades, "marketTrades", isSession]);
+  commitVP(marketTrades, targetPrice);
 }
 export async function commitToMarketTrade(
   data,

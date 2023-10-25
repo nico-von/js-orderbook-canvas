@@ -45,8 +45,13 @@ export function mouseMoveHandler(e) {
     selectorContainer.content.y = y;
 
     // redraw containers
-    drawOnContainer(gridContainer);
-    drawOnContainer(selectorContainer);
+    requestAnimationFrame((t) => {
+      if (previousTimestamp < t) {
+        drawOnContainer(gridContainer);
+        drawOnContainer(selectorContainer);
+      }
+      previousTimestamp = t;
+    });
   } else if (tabContainer.isOnCanvas(x, y)) {
     if (!tabContainer.content.mouseDown) {
       // reset tab settings

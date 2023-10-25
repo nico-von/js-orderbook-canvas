@@ -1,15 +1,15 @@
 import { manageOrderBook } from "./binanceOrderBookManagement.js";
 import { manageMarketTrades } from "./binanceMarketTradesManagement.js";
 
-let depth;
+// make global for use of clearTrades();
 let trades;
+
 export function initialiseWebSocket(
   dataTicker,
   restQtyLimit,
   lobDepth,
   marketTrades
 ) {
-  depth = lobDepth;
   trades = marketTrades;
 
   const streams = [`${dataTicker}@depth`, `${dataTicker}@aggTrade`];
@@ -23,12 +23,12 @@ export function initialiseWebSocket(
     const { e } = data;
 
     if (e == "depthUpdate") {
-      await manageOrderBook(data, dataTicker, restQtyLimit, depth);
+      await manageOrderBook(data, dataTicker, restQtyLimit, lobDepth);
     } else if (e == "aggTrade") {
       await manageMarketTrades(data, trades);
     }
     // for updating
-    postMessage([depth, trades]);
+    postMessage([lobDepth, trades]);
   });
   return;
 }
