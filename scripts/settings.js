@@ -21,7 +21,7 @@ export const priceColDecimalLength = 2;
 export const otherColsDecimalLength = 2;
 // Container Settings
 export const mainCanvasRight = 700;
-export const mainCanvasBottom = 900;
+export const mainCanvasBottom = 500;
 export const mainCanvasLeft = 0;
 export const mainCanvasTop = 0;
 
