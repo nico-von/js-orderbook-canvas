@@ -51,7 +51,7 @@ window.onload = function () {
   // smoothen canvases
   smoothifyCanvases(gridContainer, gridContent);
   smoothifyCanvases(dataContainer, dataContent);
-  smoothifyCanvases(visContainer, dataContent);
+  smoothifyCanvases(visContainer, visContent);
   smoothifyCanvases(selectorContainer, selectorContent);
   adjustedCanvasTabBottom = smoothifyCanvases(tabContainer, tabContent).height;
 
