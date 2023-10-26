@@ -1,7 +1,7 @@
 # js-orderbook-canvas
 This is a CS50 final project codebase.
 ![js-orderbook-canvas](img.png)
-#### Video Demo:  <URL HERE>
+#### Video Demo:  https://youtu.be/0bfLIzNq3K4
 
 #### Description:
 
@@ -43,7 +43,7 @@ Lag may occur, especially during highly volatile periods, because of large amoun
 
 Because of this reason, this implementation of the order book visualisation involves intensive client-side calculations, as well as a lot of data to store, which are typically better suited for backend processing with a database.  
 
-Developing a full-stack application has not been my plan for the final project. Such implementations may be for the future, if I decide to develop this into such. Therefore, I utilised web workers to address these issues and alleviate the client's load. 
+Developing a full-stack application has not been my plan for the final project as I wanted to challenge myself to try and optimise the client-side as much as I could during the limited time I had to submit the project. However, such implementations may still be open for the future, if I decide to develop this into such. Therefore, I utilised web workers to address these issues and alleviate the client's load. 
 
 One other reason that I suspect to be contributing to lag is the size of the canvas, as well as the frequency of rendering and re-rendering it undergoes.
 
