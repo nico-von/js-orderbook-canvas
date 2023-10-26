@@ -1,6 +1,6 @@
 # js-orderbook-canvas
-This is a CS50 final project codebase.<br>
-<img src="./img.png" alt="js-orderbook-canvas" width="400"/>
+This is a CS50 final project codebase.
+![js-orderbook-canvas](img.png)
 #### Video Demo:  <URL HERE>
 
 #### Description:
