@@ -35,6 +35,8 @@ Additionally, I should mention that while this is a primarily vanilla HTML and J
 
 This project exclusively focuses on the visualisation of the order book and does not include editable settings on the user interface for altering instruments, canvas height, colors, etc. However, settings.js contains all the variables required to customize the order book. Furthermore, This project is purely client-side, which in effect, may take a toll on performance, issues related to these are addressed on the performance section below. 
 
+Also, if you are accessing the github page from your phone, please not that it *does not support touchscreen devices* yet.
+
 ###### Performance
 
 Lag may occur, especially during highly volatile periods, because of large amounts of data being received, calculated and rendered.
