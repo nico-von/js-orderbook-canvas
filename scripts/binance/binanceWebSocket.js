@@ -42,5 +42,8 @@ export function clearTrades() {
     Object.keys(client.sell).forEach((key) => {
       delete client.sell[key];
     });
+    Object.keys(client.vp).forEach((key) => {
+      delete client.vp[key];
+    });
   }
 }
