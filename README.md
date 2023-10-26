@@ -1,6 +1,6 @@
 # js-orderbook-canvas
 This is a CS50 final project codebase.
-![js-orderbook-canvas](./gif.gif)
+![js-orderbook-canvas](./img.png)
 #### Video Demo:  <URL HERE>
 
 #### Description:
