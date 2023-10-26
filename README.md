@@ -11,7 +11,7 @@ I dedicate this project to maintaining the low-level spirit of CS50 by developin
 ##### Features
 
 1. Live Level 2 Data: I've utilised Binance futures data, as it is freely available. Other providers, especially for futures and stocks, require a paid subscription.
-2. Unlimited Scrolling: You can access all available data for all prices within the scale.
+2. Unlimited Scrolling: You can access all available data for all prices within the scale. (Does not support touchscreen devices yet)
 3. Adjustable tickSize (granularity): You have the flexibility to choose your preferred granularity, provided it doesn't exceed the minimum granularity (refer to 'tickSize' in settings.js).
 4. Session Volume Profile: This feature 'captures' all traded volumes from the beginning of the session to the current time.
 5. Client Volume Profile: Similar To SVP but is reset as per your request. You can do this by double-clicking on any part of the orderbook.
